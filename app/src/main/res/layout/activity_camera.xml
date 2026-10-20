@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/raizCamera"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".CameraActivity">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previa"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Caixa de texto sobre a câmera; a posição vertical é ajustada no código -->
+    <ScrollView
+        android:id="@+id/rolagemCamera"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_gravity="top"
+        android:layout_marginHorizontal="12dp"
+        android:background="#66000000"
+        android:scrollbars="none">
+
+        <TextView
+            android:id="@+id/textoCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:lineSpacingMultiplier="1.2"
+            android:paddingHorizontal="16dp"
+            android:shadowColor="#CC000000"
+            android:shadowRadius="4"
+            android:textColor="@color/white"
+            android:textSize="24sp" />
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/semPermissao"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/permissao_camera_negada"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/botaoPermissao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/permissao_conceder" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/barraCamera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#99000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoVoltarCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/voltar"
+            app:icon="@drawable/ic_back"
+            app:iconTint="@color/white" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoReiniciarCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/reiniciar"
+            app:icon="@drawable/ic_replay"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoPlayCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/play"
+            app:icon="@drawable/ic_play"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoTrocarCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/trocar_camera"
+            app:icon="@drawable/ic_switch_camera"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoConfigCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/configuracoes"
+            app:icon="@drawable/ic_tune"
+            app:iconTint="@color/white" />
+    </LinearLayout>
+</FrameLayout>

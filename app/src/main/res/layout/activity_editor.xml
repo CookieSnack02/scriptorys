@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/raizEditor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".EditorActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoVoltar"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/voltar"
+            app:icon="@drawable/ic_back" />
+
+        <TextView
+            android:id="@+id/tituloTela"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/novo_script"
+            android:textAppearance="?attr/textAppearanceTitleLarge" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoSalvar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="@string/salvar"
+            app:icon="@drawable/ic_check" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/campoTitulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:hint="@string/titulo_hint"
+        android:importantForAutofill="no"
+        android:inputType="textCapSentences"
+        android:maxLines="1"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textStyle="bold" />
+
+    <!-- Barra de formatação do texto rico -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@color/white"
+        android:elevation="1dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp">
+
+            <Button
+                android:id="@+id/fmtNegrito"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/negrito"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="B"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <Button
+                android:id="@+id/fmtItalico"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/italico"
+                android:fontFamily="serif"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="I"
+                android:textSize="18sp"
+                android:textStyle="italic"
+                tools:ignore="HardcodedText" />
+
+            <Button
+                android:id="@+id/fmtSublinhado"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/sublinhado"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="U"
+                android:textSize="18sp"
+                tools:ignore="HardcodedText" />
+
+            <Button
+                android:id="@+id/fmtTachado"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/tachado"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="S"
+                android:textSize="18sp"
+                tools:ignore="HardcodedText" />
+
+            <Button
+                android:id="@+id/fmtCor"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/cor_texto"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="A"
+                android:textSize="18sp"
+                tools:ignore="HardcodedText" />
+
+            <Button
+                android:id="@+id/fmtMarca"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/marca_texto"
+                android:minWidth="0dp"
+                android:padding="0dp"
+                android:text="ab"
+                android:textSize="16sp"
+                tools:ignore="HardcodedText" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/fmtLimpar"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/limpar_formatacao"
+                app:icon="@drawable/ic_format_clear" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <EditText
+        android:id="@+id/campoTexto"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@null"
+        android:gravity="top|start"
+        android:hint="@string/texto_hint"
+        android:importantForAutofill="no"
+        android:inputType="textMultiLine|textCapSentences"
+        android:lineSpacingMultiplier="1.2"
+        android:padding="16dp"
+        android:textSize="18sp" />
+</LinearLayout>

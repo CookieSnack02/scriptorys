@@ -1,3 +1,74 @@
 <resources>
     <string name="app_name">Scriptorys</string>
+
+    <!-- Tela principal -->
+    <string name="adicionar_script">Adicionar script</string>
+    <string name="lista_vazia">Toque no + para criar seu primeiro script</string>
+    <string name="dica_lista">Toque: abrir · Toque duplo: editar · Segurar: excluir</string>
+    <string name="sem_titulo">Sem título</string>
+    <string name="excluir_titulo">Excluir script</string>
+    <string name="excluir_mensagem">Deseja realmente excluir \"%1$s\"? Esta ação não pode ser desfeita.</string>
+    <string name="excluir">Excluir</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="escolher_modo">Como deseja usar este script?</string>
+    <string name="teleprompter">Teleprompter</string>
+    <string name="camera">Câmera</string>
+
+    <!-- Editor -->
+    <string name="novo_script">Novo script</string>
+    <string name="editar_script">Editar script</string>
+    <string name="titulo_hint">Título</string>
+    <string name="texto_hint">Escreva seu script aqui…</string>
+    <string name="salvar">Salvar</string>
+    <string name="negrito">Negrito</string>
+    <string name="italico">Itálico</string>
+    <string name="sublinhado">Sublinhado</string>
+    <string name="tachado">Tachado</string>
+    <string name="cor_texto">Cor do texto</string>
+    <string name="marca_texto">Marca-texto</string>
+    <string name="limpar_formatacao">Limpar formatação</string>
+    <string name="selecione_trecho">Selecione um trecho do texto primeiro</string>
+    <string name="script_vazio">O script está vazio</string>
+    <string name="descartar_titulo">Descartar alterações?</string>
+    <string name="descartar">Descartar</string>
+    <string name="continuar_editando">Continuar editando</string>
+
+    <!-- Teleprompter -->
+    <string name="play">Iniciar</string>
+    <string name="pause">Pausar</string>
+    <string name="reiniciar">Voltar ao início</string>
+    <string name="configuracoes">Configurações</string>
+    <string name="voltar">Voltar</string>
+    <string name="orientacao">Orientação da tela</string>
+    <string name="vertical">Vertical</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="espelhar">Espelhar</string>
+    <string name="espelhar_horizontal">Horizontal</string>
+    <string name="espelhar_vertical">Vertical</string>
+    <string name="velocidade">Velocidade: %1$d palavras/min</string>
+    <string name="alinhamento">Alinhamento do texto</string>
+    <string name="esquerda">Esquerda</string>
+    <string name="centro">Centro</string>
+    <string name="direita">Direita</string>
+    <string name="justificado">Justificado</string>
+    <string name="tamanho_texto">Tamanho do texto: %1$d sp</string>
+    <string name="cor_fundo">Cor de fundo</string>
+    <string name="fundo_preto">Preto</string>
+    <string name="fundo_branco">Branco</string>
+    <string name="fundo_meio">Meio-termo</string>
+    <string name="fonte">Fonte</string>
+    <string name="fonte_serifada">Serifada</string>
+    <string name="fonte_sans">Sem serifa</string>
+    <string name="fonte_mono">Mono</string>
+    <string name="fonte_manuscrita">Manuscrita</string>
+
+    <!-- Câmera -->
+    <string name="posicao_texto">Posição do texto</string>
+    <string name="topo">Topo</string>
+    <string name="base">Base</string>
+    <string name="cor_do_texto">Cor do texto</string>
+    <string name="trocar_camera">Trocar câmera</string>
+    <string name="permissao_camera_negada">Sem permissão de câmera não é possível usar este modo.</string>
+    <string name="permissao_conceder">Conceder permissão</string>
+    <string name="erro_camera">Não foi possível abrir a câmera.</string>
 </resources>

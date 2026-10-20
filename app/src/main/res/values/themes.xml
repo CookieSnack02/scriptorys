@@ -1,9 +1,25 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.Scriptorys" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Base.Theme.Scriptorys" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/navy</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/stone</item>
+        <item name="colorOnPrimaryContainer">@color/navy</item>
+        <item name="colorSecondary">@color/navy_blue</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/stone</item>
+        <item name="colorOnSecondaryContainer">@color/navy</item>
+        <item name="android:colorBackground">@color/paper</item>
+        <item name="colorSurface">@color/paper</item>
+        <item name="colorOnSurface">@color/navy</item>
+        <item name="android:windowBackground">@color/paper</item>
     </style>
 
     <style name="Theme.Scriptorys" parent="Base.Theme.Scriptorys" />
+
+    <!-- Teleprompter e câmera: tela cheia e escura -->
+    <style name="Theme.Scriptorys.Fullscreen" parent="Theme.Scriptorys">
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="28">shortEdges</item>
+    </style>
 </resources>

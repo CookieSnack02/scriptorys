@@ -2,4 +2,15 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Cores da marca (logo Scriptorys) -->
+    <color name="navy">#111827</color>
+    <color name="navy_blue">#16355F</color>
+    <color name="paper">#F1EFEB</color>
+    <color name="stone">#BDB7AE</color>
+
+    <!-- Fundos do teleprompter -->
+    <color name="prompt_preto">#000000</color>
+    <color name="prompt_branco">#F9F7F0</color>
+    <color name="prompt_meio">#2D2D2D</color>
 </resources>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/raizPrompt"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/prompt_preto"
+    tools:context=".TeleprompterActivity">
+
+    <ScrollView
+        android:id="@+id/rolagem"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <TextView
+            android:id="@+id/textoPrompt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.25"
+            android:paddingHorizontal="32dp"
+            android:textColor="@color/white"
+            android:textSize="40sp" />
+    </ScrollView>
+
+    <!-- Marcador da linha de leitura -->
+    <View
+        android:id="@+id/marcador"
+        android:layout_width="12dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_vertical|start"
+        android:background="@color/navy_blue" />
+
+    <LinearLayout
+        android:id="@+id/barraControles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#B3000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="4dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoVoltar"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/voltar"
+            app:icon="@drawable/ic_back"
+            app:iconTint="@color/white" />
+
+        <TextView
+            android:id="@+id/tituloPrompt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoReiniciar"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/reiniciar"
+            app:icon="@drawable/ic_replay"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoPlay"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/play"
+            app:icon="@drawable/ic_play"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoConfig"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/configuracoes"
+            app:icon="@drawable/ic_tune"
+            app:iconTint="@color/white" />
+    </LinearLayout>
+</FrameLayout>

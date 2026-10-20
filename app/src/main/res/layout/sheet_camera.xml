@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/posicao_texto" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoPosicao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/posicaoTopo"
+                style="@style/BotaoOpcao"
+                android:text="@string/topo" />
+
+            <Button
+                android:id="@+id/posicaoCentro"
+                style="@style/BotaoOpcao"
+                android:text="@string/centro" />
+
+            <Button
+                android:id="@+id/posicaoBase"
+                style="@style/BotaoOpcao"
+                android:text="@string/base" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:id="@+id/rotuloTamanhoCamera"
+            style="@style/RotuloOpcao" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderTamanhoCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stepSize="2"
+            android:valueFrom="14"
+            android:valueTo="64"
+            app:tickVisible="false" />
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/cor_do_texto" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/grupoCorCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
+
+        <TextView
+            android:id="@+id/rotuloVelocidadeCamera"
+            style="@style/RotuloOpcao" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderVelocidadeCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stepSize="5"
+            android:valueFrom="0"
+            android:valueTo="300"
+            app:tickVisible="false" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/orientacao" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoOrientacao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/orientacaoVertical"
+                style="@style/BotaoOpcao"
+                android:text="@string/vertical" />
+
+            <Button
+                android:id="@+id/orientacaoHorizontal"
+                style="@style/BotaoOpcao"
+                android:text="@string/horizontal" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/espelhar" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoEspelhar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/espelharHorizontal"
+                style="@style/BotaoOpcao"
+                android:text="@string/espelhar_horizontal" />
+
+            <Button
+                android:id="@+id/espelharVertical"
+                style="@style/BotaoOpcao"
+                android:text="@string/espelhar_vertical" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:id="@+id/rotuloVelocidade"
+            style="@style/RotuloOpcao" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderVelocidade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stepSize="5"
+            android:valueFrom="0"
+            android:valueTo="300"
+            app:tickVisible="false" />
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/alinhamento" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoAlinhamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/alinharEsquerda"
+                style="@style/BotaoOpcao"
+                android:text="@string/esquerda" />
+
+            <Button
+                android:id="@+id/alinharCentro"
+                style="@style/BotaoOpcao"
+                android:text="@string/centro" />
+
+            <Button
+                android:id="@+id/alinharDireita"
+                style="@style/BotaoOpcao"
+                android:text="@string/direita" />
+
+            <Button
+                android:id="@+id/alinharJustificado"
+                style="@style/BotaoOpcao"
+                android:text="@string/justificado" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            android:id="@+id/rotuloTamanho"
+            style="@style/RotuloOpcao" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderTamanho"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stepSize="2"
+            android:valueFrom="16"
+            android:valueTo="96"
+            app:tickVisible="false" />
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/cor_fundo" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoFundo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/fundoPreto"
+                style="@style/BotaoOpcao"
+                android:text="@string/fundo_preto" />
+
+            <Button
+                android:id="@+id/fundoBranco"
+                style="@style/BotaoOpcao"
+                android:text="@string/fundo_branco" />
+
+            <Button
+                android:id="@+id/fundoMeio"
+                style="@style/BotaoOpcao"
+                android:text="@string/fundo_meio" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/fonte" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/grupoFonte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/fonteSerifada"
+                style="@style/BotaoOpcao"
+                android:fontFamily="serif"
+                android:text="@string/fonte_serifada" />
+
+            <Button
+                android:id="@+id/fonteSans"
+                style="@style/BotaoOpcao"
+                android:fontFamily="sans-serif"
+                android:text="@string/fonte_sans" />
+
+            <Button
+                android:id="@+id/fonteMono"
+                style="@style/BotaoOpcao"
+                android:fontFamily="monospace"
+                android:text="@string/fonte_mono" />
+
+            <Button
+                android:id="@+id/fonteManuscrita"
+                style="@style/BotaoOpcao"
+                android:fontFamily="cursive"
+                android:text="@string/fonte_manuscrita" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

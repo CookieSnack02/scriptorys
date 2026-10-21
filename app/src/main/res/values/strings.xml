@@ -29,6 +29,7 @@
     <string name="limpar_formatacao">Limpar formatação</string>
     <string name="selecione_trecho">Selecione um trecho do texto primeiro</string>
     <string name="script_vazio">O script está vazio</string>
+    <string name="colado_sem_formatacao">O app de origem copiou só o texto, sem a formatação.</string>
     <string name="descartar_titulo">Descartar alterações?</string>
     <string name="descartar">Descartar</string>
     <string name="continuar_editando">Continuar editando</string>

@@ -71,8 +71,10 @@ ritmo em qualquer tamanho de letra ou de tela. Para quem prefere o jeito tradici
 ### Editor de texto rico
 - Título e corpo do roteiro.
 - **Negrito**, *itálico*, <u>sublinhado</u>, ~~tachado~~, cor do texto, marca-texto e "limpar formatação".
-- **Colar com formatação**: texto copiado do Word, Google Docs, navegadores e outros apps mantém negrito,
-  itálico, sublinhado, tachado, cores, marca-texto e listas.
+- **Colar com formatação**: texto copiado do Word, Google Docs/Drive, navegadores e outros apps mantém negrito,
+  itálico, sublinhado, tachado, cores, marca-texto e listas, tanto pelo menu **Colar** quanto pela barra de
+  área de transferência do teclado (Gboard). Se o app de origem copiar só o texto puro (como a
+  pré-visualização de PDF), o app avisa.
 - Aviso ao sair com alterações não salvas.
 
 ### Teleprompter
@@ -186,7 +188,8 @@ em classes pequenas.
 | `ScriptRepository` | Salvar, listar, buscar e excluir scripts em `scripts.json` | `listar()`, `buscar()`, `salvar()`, `excluir()` |
 | `EditorActivity` | Editor de texto rico | `alternar()` (liga/desliga estilo), `aplicarCor()`, `remover()`, `cobre()` |
 | `Html` (em `EditorActivity.kt`) | Conversão texto formatado ↔ HTML | `deTexto()`, `paraTexto()` |
-| `ColagemFormatada` | Colar mantendo a formatação de Word/Docs | `ativar()`, `deHtml()`, `normalizar()` |
+| `ColagemFormatada` | Colar mantendo a formatação de Word/Docs (CSS inline e por classes) | `ativar()`, `deHtml()`, `normalizar()`, `formatadoDaAreaDeTransferencia()` |
+| `EditorTextoRico` | Campo do editor que reconhece a colagem feita pela barra do teclado | `onCreateInputConnection()` (intercepta `commitText`) |
 | `TeleprompterActivity` | Tela do teleprompter | `alternarPlay()`, `mudarVelocidade()`, `irParaParagrafo()`, `abrirOpcoesTexto()`, `abrirConfiguracoes()` |
 | `PainelTeleprompter` | Posições do painel e animação entre os estados | `mostrar(rodando, horizontal, animar)`, `completo()`, `compacto()` |
 | `ReguaVelocidade` | Régua de velocidade desenhada à mão (`View` própria) | `configurar()`, `animarPara()`, `onDraw()`, `onTouchEvent()` |
@@ -227,7 +230,11 @@ No Windows, use `gradlew.bat assembleDebug`.
 ## Testes
 
 Os testes instrumentados ficam em `app/src/androidTest` e verificam a colagem com formatação
-(HTML no formato do Google Docs, colagem no editor e "colar como texto simples").
+(HTML no formato do Google Docs, estilos por classe CSS, colagem no editor, colagem pela barra do teclado e
+"colar como texto simples").
+
+Para investigar uma colagem que perdeu a formatação, rode a versão de depuração e filtre o **Logcat** por
+`ColagemFormatada`: aparecem os tipos copiados e a estrutura do HTML, sem o texto.
 
 ```bash
 ./gradlew connectedDebugAndroidTest
@@ -247,6 +254,7 @@ app/src/main/
 │   ├── ScriptRepository.kt       # armazenamento (JSON)
 │   ├── EditorActivity.kt         # editor rico + conversão HTML
 │   ├── ColagemFormatada.kt       # colar com formatação
+│   ├── EditorTextoRico.kt        # campo do editor (colagem pelo teclado)
 │   ├── TeleprompterActivity.kt   # tela do teleprompter
 │   ├── PainelTeleprompter.kt     # estados e animação do painel
 │   ├── ReguaVelocidade.kt        # régua de velocidade

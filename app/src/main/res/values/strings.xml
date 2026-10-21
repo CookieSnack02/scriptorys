@@ -62,6 +62,20 @@
     <string name="fonte_mono">Mono</string>
     <string name="fonte_manuscrita">Manuscrita</string>
 
+    <string name="trocar_modo">Trocar modo</string>
+    <string name="modo_palavras">PALAVRAS POR MINUTO</string>
+    <string name="modo_rolagem">ROLAGEM</string>
+    <string name="alternar_modo_velocidade">Alternar modo de velocidade</string>
+    <string name="ppm_formato">%1$d ppm</string>
+    <string name="rolagem_formato">%1$s×</string>
+    <string name="editar_velocidade">Definir velocidade</string>
+    <string name="mais_lento">Mais devagar</string>
+    <string name="mais_rapido">Mais rápido</string>
+    <string name="paragrafo_anterior">Parágrafo anterior</string>
+    <string name="proximo_paragrafo">Próximo parágrafo</string>
+    <string name="opcoes_texto">Texto</string>
+    <string name="ok">OK</string>
+
     <!-- Câmera -->
     <string name="posicao_texto">Posição do texto</string>
     <string name="topo">Topo</string>

@@ -13,4 +13,11 @@
     <color name="prompt_preto">#000000</color>
     <color name="prompt_branco">#F9F7F0</color>
     <color name="prompt_meio">#2D2D2D</color>
+
+    <!-- Controles do teleprompter -->
+    <color name="laranja">#FF8A00</color>
+    <color name="laranja_claro">#FFB24D</color>
+    <color name="texto_sobre_laranja">#1A1A1A</color>
+    <color name="painel">#F7232323</color>
+    <color name="painel_borda">#3DFFFFFF</color>
 </resources>

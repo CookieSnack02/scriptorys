@@ -6,87 +6,307 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/prompt_preto"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     tools:context=".TeleprompterActivity">
 
     <ScrollView
         android:id="@+id/rolagem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="none">
+        android:scrollbarSize="4dp"
+        android:scrollbarThumbVertical="@drawable/barra_rolagem"
+        android:scrollbars="vertical">
 
         <TextView
             android:id="@+id/textoPrompt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:lineSpacingMultiplier="1.25"
-            android:paddingHorizontal="32dp"
+            android:lineSpacingMultiplier="1.2"
+            android:paddingHorizontal="24dp"
             android:textColor="@color/white"
             android:textSize="40sp" />
     </ScrollView>
 
-    <!-- Marcador da linha de leitura -->
-    <View
-        android:id="@+id/marcador"
-        android:layout_width="12dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_vertical|start"
-        android:background="@color/navy_blue" />
-
-    <LinearLayout
-        android:id="@+id/barraControles"
+    <!--
+        Painel de controles. As posições de cada elemento são definidas em PainelTeleprompter,
+        que alterna (com animação) entre o painel completo (pausado) e a pílula compacta (rodando).
+    -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/painel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:background="#B3000000"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="4dp"
-        android:paddingVertical="4dp">
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/botaoVoltarPrompt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/fundo_botao_voltar"
+            android:contentDescription="@string/voltar"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="@color/laranja" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/botaoVoltar"
-            style="@style/Widget.Material3.Button.IconButton"
+            android:id="@+id/botaoTrocarModo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/botaoVoltarPrompt"
+            app:layout_constraintBottom_toBottomOf="@id/botaoVoltarPrompt"
+            android:layout_marginEnd="16dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/voltar"
-            app:icon="@drawable/ic_back"
-            app:iconTint="@color/white" />
+            android:layout_height="56dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="20dp"
+            android:text="@string/trocar_modo"
+            android:textColor="@color/texto_sobre_laranja"
+            android:textSize="18sp"
+            app:backgroundTint="@color/laranja"
+            app:cornerRadius="28dp"
+            app:icon="@drawable/ic_trocar_modo"
+            app:iconSize="24dp"
+            app:iconTint="@color/texto_sobre_laranja"
+            app:strokeColor="@color/laranja_claro"
+            app:strokeWidth="2dp" />
 
         <TextView
-            android:id="@+id/tituloPrompt"
+            android:id="@+id/pilulaVelocidade"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/fundoCartao"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fundo_pilula"
+            android:drawablePadding="10dp"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="22dp"
+            android:paddingVertical="10dp"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            app:drawableEndCompat="@drawable/ic_edit"
+            app:drawableTint="@color/white" />
+
+        <View
+            android:id="@+id/fundoCartao"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="20dp"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textColor="@color/white" />
+            android:layout_height="292dp"
+            android:background="@drawable/fundo_cartao" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/botaoReiniciar"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/reiniciar"
-            app:icon="@drawable/ic_replay"
-            app:iconTint="@color/white" />
+        <View
+            android:id="@+id/fundoAnterior"
+            app:layout_constraintStart_toStartOf="@id/botaoAnterior"
+            app:layout_constraintEnd_toEndOf="@id/botaoAnterior"
+            app:layout_constraintTop_toTopOf="@id/botaoAnterior"
+            app:layout_constraintBottom_toBottomOf="@id/botaoAnterior"
+            android:visibility="invisible"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/fundo_quadrado" />
 
-        <com.google.android.material.button.MaterialButton
+        <View
+            android:id="@+id/fundoPlay"
+            app:layout_constraintStart_toStartOf="@id/botaoPlay"
+            app:layout_constraintEnd_toEndOf="@id/botaoPlay"
+            app:layout_constraintTop_toTopOf="@id/botaoPlay"
+            app:layout_constraintBottom_toBottomOf="@id/botaoPlay"
+            android:visibility="invisible"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/fundo_quadrado" />
+
+        <ImageButton
+            android:id="@+id/botaoAlternarModo"
+            app:layout_constraintStart_toStartOf="@id/fundoCartao"
+            app:layout_constraintTop_toBottomOf="@id/regua"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/fundo_circulo_laranja"
+            android:contentDescription="@string/alternar_modo_velocidade"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/texto_sobre_laranja" />
+
+        <!-- Carrossel com o modo de velocidade; o modo vizinho aparece esmaecido ao lado -->
+        <FrameLayout
+            android:id="@+id/carrosselModo"
+            app:layout_constraintStart_toStartOf="@id/fundoCartao"
+            app:layout_constraintEnd_toEndOf="@id/fundoCartao"
+            app:layout_constraintTop_toBottomOf="@id/regua"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="14dp"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:clipChildren="true"
+            android:contentDescription="@string/alternar_modo_velocidade">
+
+            <TextView
+                android:id="@+id/rotuloVizinho"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:alpha="0.35"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/rotuloModo"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/laranja"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+
+        <ImageButton
+            android:id="@+id/iconeLento"
+            app:layout_constraintStart_toStartOf="@id/fundoCartao"
+            app:layout_constraintTop_toTopOf="@id/fundoCartao"
+            android:layout_marginStart="26dp"
+            android:layout_marginTop="34dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mais_lento"
+            android:src="@drawable/ic_walk"
+            app:tint="@color/white" />
+
+        <com.example.scriptorys.ReguaVelocidade
+            android:id="@+id/regua"
+            app:layout_constraintStart_toEndOf="@id/iconeLento"
+            app:layout_constraintEnd_toStartOf="@id/iconeRapido"
+            app:layout_constraintTop_toTopOf="@id/iconeLento"
+            app:layout_constraintBottom_toBottomOf="@id/iconeLento"
+            android:layout_marginHorizontal="8dp"
+            android:layout_width="0dp"
+            android:layout_height="48dp" />
+
+        <ImageButton
+            android:id="@+id/iconeRapido"
+            app:layout_constraintEnd_toEndOf="@id/fundoCartao"
+            app:layout_constraintTop_toTopOf="@id/iconeLento"
+            app:layout_constraintBottom_toBottomOf="@id/iconeLento"
+            android:layout_marginEnd="26dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/mais_rapido"
+            android:src="@drawable/ic_run"
+            app:tint="@color/white" />
+
+        <ImageButton
+            android:id="@+id/botaoAnterior"
+            app:layout_constraintEnd_toStartOf="@id/botaoPlay"
+            app:layout_constraintTop_toTopOf="@id/botaoPlay"
+            app:layout_constraintBottom_toBottomOf="@id/botaoPlay"
+            android:layout_marginEnd="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/paragrafo_anterior"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_skip_previous"
+            app:tint="@color/white" />
+
+        <ImageButton
             android:id="@+id/botaoPlay"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/fundoCartao"
+            app:layout_constraintEnd_toEndOf="@id/fundoCartao"
+            app:layout_constraintTop_toBottomOf="@id/botaoEditar"
+            android:layout_marginTop="8dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/play"
-            app:icon="@drawable/ic_play"
-            app:iconTint="@color/white" />
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play"
+            app:tint="@color/white" />
 
-        <com.google.android.material.button.MaterialButton
+        <ImageButton
+            android:id="@+id/botaoProximo"
+            app:layout_constraintStart_toEndOf="@id/botaoPlay"
+            app:layout_constraintTop_toTopOf="@id/botaoPlay"
+            app:layout_constraintBottom_toBottomOf="@id/botaoPlay"
+            android:layout_marginStart="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/proximo_paragrafo"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_skip_next"
+            app:tint="@color/white" />
+
+        <ImageButton
+            android:id="@+id/botaoEditar"
+            app:layout_constraintStart_toStartOf="@id/fundoCartao"
+            app:layout_constraintTop_toBottomOf="@id/carrosselModo"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="10dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/fundo_circulo_contorno"
+            android:contentDescription="@string/editar_script"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/white" />
+
+        <ImageButton
+            android:id="@+id/botaoTexto"
+            app:layout_constraintStart_toEndOf="@id/botaoEditar"
+            app:layout_constraintTop_toTopOf="@id/botaoEditar"
+            app:layout_constraintBottom_toBottomOf="@id/botaoEditar"
+            android:layout_marginStart="14dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/fundo_circulo_contorno"
+            android:contentDescription="@string/opcoes_texto"
+            android:src="@drawable/ic_format_size"
+            app:tint="@color/white" />
+
+        <ImageButton
             android:id="@+id/botaoConfig"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@id/fundoCartao"
+            app:layout_constraintTop_toTopOf="@id/botaoEditar"
+            app:layout_constraintBottom_toBottomOf="@id/botaoEditar"
+            android:layout_marginEnd="24dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/fundo_circulo_contorno"
             android:contentDescription="@string/configuracoes"
-            app:icon="@drawable/ic_tune"
-            app:iconTint="@color/white" />
-    </LinearLayout>
+            android:src="@drawable/ic_settings"
+            app:tint="@color/white" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Aviso rápido (ex.: velocidade alterada pelo controle remoto) -->
+    <TextView
+        android:id="@+id/indicador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/fundo_indicador"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:textColor="@color/white"
+        android:visibility="gone" />
 </FrameLayout>

@@ -16,6 +16,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -58,6 +59,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var semPermissao: View
     private lateinit var botaoPlay: MaterialButton
     private lateinit var rolador: RolagemAutomatica
+    private lateinit var controle: ControleRemoto
 
     private var cameraFrontal = true
     private var margemTopo = 0
@@ -97,6 +99,15 @@ class CameraActivity : AppCompatActivity() {
         // Sobre a câmera o texto usa uma cor única, escolhida pelo usuário.
         texto.text = Html.paraTexto(script.html).toString()
         rolador = RolagemAutomatica(rolagem, texto) { atualizarPlay() }
+        val indicador = findViewById<TextView>(R.id.indicador)
+        // Com o foco já na tela, o Android não "gasta" a primeira seta do controle movendo o foco.
+        findViewById<View>(R.id.raizCamera).requestFocus()
+        controle = ControleRemoto(rolador, ::alternarPlay) { delta ->
+            palavrasPorMinuto = (palavrasPorMinuto + delta * 10).coerceIn(0, 300)
+            rolador.palavrasPorMinuto = palavrasPorMinuto
+            salvarPreferencias()
+            indicador.mostrarBrevemente(getString(R.string.velocidade, palavrasPorMinuto))
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.raizCamera)) { _, insets ->
             val barras = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
@@ -118,7 +129,10 @@ class CameraActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.botaoVoltarCamera).setOnClickListener { finish() }
-        findViewById<Button>(R.id.botaoReiniciarCamera).setOnClickListener { rolador.reiniciar() }
+        findViewById<Button>(R.id.botaoReiniciarCamera).setOnClickListener {
+            rolador.reiniciar()
+            atualizarPlay()
+        }
         botaoPlay.setOnClickListener { alternarPlay() }
         findViewById<Button>(R.id.botaoTrocarCamera).setOnClickListener {
             cameraFrontal = !cameraFrontal
@@ -147,10 +161,16 @@ class CameraActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         if (::rolador.isInitialized) {
-            rolador.pausar()
+            rolador.parar()
             atualizarPlay()
         }
     }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        (::controle.isInitialized && controle.tecla(event)) || super.dispatchKeyEvent(event)
+
+    override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean =
+        (::controle.isInitialized && controle.movimento(ev)) || super.dispatchGenericMotionEvent(ev)
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -244,6 +264,7 @@ class CameraActivity : AppCompatActivity() {
         val dialogo = BottomSheetDialog(this)
         dialogo.setContentView(painel)
         dialogo.window?.setDimAmount(0.1f)
+        dialogo.abrirExpandido()
 
         val posicoes = mapOf(
             R.id.posicaoTopo to PosicaoTexto.TOPO,

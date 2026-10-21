@@ -12,13 +12,18 @@ enum class Alinhamento { ESQUERDA, CENTRO, DIREITA, JUSTIFICADO }
 enum class Fundo { PRETO, BRANCO, MEIO }
 enum class Fonte { SERIFADA, SANS, MONO, MANUSCRITA }
 
+/** Palavras por minuto (depende do texto) ou rolagem contínua numa velocidade fixa, de 0 a 10. */
+enum class ModoVelocidade { ROLAGEM, PALAVRAS }
+
 /** Preferências do teleprompter; ficam salvas entre um uso e outro. */
 data class ConfigTeleprompter(
     val horizontal: Boolean = false,
     val espelharHorizontal: Boolean = false,
     val espelharVertical: Boolean = false,
     val palavrasPorMinuto: Int = 120,
-    val alinhamento: Alinhamento = Alinhamento.CENTRO,
+    val modoVelocidade: ModoVelocidade = ModoVelocidade.PALAVRAS,
+    val nivelRolagem: Float = 3f,
+    val alinhamento: Alinhamento = Alinhamento.ESQUERDA,
     val tamanhoSp: Int = 40,
     val fundo: Fundo = Fundo.PRETO,
     val fonte: Fonte = Fonte.SANS,
@@ -29,6 +34,8 @@ data class ConfigTeleprompter(
             .putBoolean("espelharH", espelharHorizontal)
             .putBoolean("espelharV", espelharVertical)
             .putInt("ppm", palavrasPorMinuto)
+            .putString("modoVelocidade", modoVelocidade.name)
+            .putFloat("nivelRolagem", nivelRolagem)
             .putString("alinhamento", alinhamento.name)
             .putInt("tamanho", tamanhoSp)
             .putString("fundo", fundo.name)
@@ -65,6 +72,8 @@ data class ConfigTeleprompter(
                 espelharHorizontal = p.getBoolean("espelharH", padrao.espelharHorizontal),
                 espelharVertical = p.getBoolean("espelharV", padrao.espelharVertical),
                 palavrasPorMinuto = p.getInt("ppm", padrao.palavrasPorMinuto),
+                modoVelocidade = enumOu(p.getString("modoVelocidade", null), padrao.modoVelocidade),
+                nivelRolagem = p.getFloat("nivelRolagem", padrao.nivelRolagem),
                 alinhamento = enumOu(p.getString("alinhamento", null), padrao.alinhamento),
                 tamanhoSp = p.getInt("tamanho", padrao.tamanhoSp),
                 fundo = enumOu(p.getString("fundo", null), padrao.fundo),

@@ -62,6 +62,7 @@ class EditorActivity : AppCompatActivity() {
         }
 
         configurarBarraFormatacao()
+        ColagemFormatada.ativar(campoTexto)
 
         findViewById<Button>(R.id.botaoSalvar).setOnClickListener { salvar() }
         findViewById<Button>(R.id.botaoVoltar).setOnClickListener { onBackPressedDispatcher.onBackPressed() }

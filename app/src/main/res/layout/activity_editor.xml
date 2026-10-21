@@ -152,7 +152,7 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <EditText
+    <com.example.scriptorys.EditorTextoRico
         android:id="@+id/campoTexto"
         android:layout_width="match_parent"
         android:layout_height="0dp"

@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.core.view.ContentInfoCompat
 import androidx.core.view.ViewCompat
@@ -44,6 +45,49 @@ class ColagemFormatadaTest {
         assertEquals(listOf("vermelho"), trechos(texto, ForegroundColorSpan::class.java) { true })
         assertEquals(Color.rgb(204, 0, 0), texto.getSpans(0, texto.length, ForegroundColorSpan::class.java)[0].foregroundColor)
         assertEquals(listOf("amarelo"), trechos(texto, BackgroundColorSpan::class.java) { true })
+    }
+
+    @Test
+    fun entendeEstilosPorClasseCss() {
+        // Formato de exportação do Google Docs: estilos em classes dentro de um bloco <style>.
+        val html = """
+            <html><head><style type="text/css">
+              .c1{font-weight:700;color:#000000} .c2{font-style:italic} p.c3{text-decoration:underline}
+              /* comentário */ .c4{font:bold 11pt Arial}
+            </style></head>
+            <body><p class="c3"><span class="c1">Negrito</span> <span class="c2">itálico</span></p>
+            <p><span class="c4">Atalho</span> normal</p></body></html>
+        """.trimIndent()
+        val texto = ColagemFormatada.deHtml(html)
+        assertEquals("Negrito itálico\nAtalho normal", texto.toString())
+        assertEquals(listOf("Negrito", "Atalho"), trechos(texto, StyleSpan::class.java) { it.style == Typeface.BOLD })
+        assertEquals(listOf("itálico"), trechos(texto, StyleSpan::class.java) { it.style == Typeface.ITALIC })
+        // O sublinhado vem do parágrafo inteiro (cada trecho de texto ganha o seu).
+        assertEquals("Negrito itálico", trechos(texto, UnderlineSpan::class.java) { true }.joinToString(""))
+    }
+
+    @Test
+    fun colarPelaBarraDoTecladoMantemFormatacao() {
+        ActivityScenario.launch(EditorActivity::class.java).use { cenario ->
+            cenario.onActivity { atividade ->
+                val campo = atividade.findViewById<EditorTextoRico>(R.id.campoTexto)
+                campo.requestFocus()
+                // O emulador sincroniza a área de transferência com o computador e troca o HTML por
+                // texto puro, então o teste entrega o conteúdo copiado diretamente ao campo.
+                val copiado = ClipData.newHtmlText("script", "Abertura normal itálico e sublinhado", htmlDocs.substringBefore("<p dir=\"ltr\"><span style=\"color:rgb"))
+                campo.lerAreaDeTransferencia = { copiado }
+                // O Gboard cola pela barra de área de transferência chamando commitText com o texto puro.
+                val conexao = campo.onCreateInputConnection(EditorInfo())!!
+                conexao.commitText("Abertura normal itálico e sublinhado", 1)
+
+                assertEquals("Abertura normal itálico e sublinhado", campo.text.toString())
+                assertEquals(1, campo.editableText.getSpans(0, campo.length(), StyleSpan::class.java).count { it.style == Typeface.BOLD })
+
+                // Digitação comum (sem relação com a área de transferência) não é afetada.
+                conexao.commitText(" fim", 1)
+                assertTrue(campo.editableText.endsWith(" fim"))
+            }
+        }
     }
 
     @Test

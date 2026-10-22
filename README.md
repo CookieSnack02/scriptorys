@@ -128,6 +128,10 @@ arquivos que abrir o APK.
   livre, a caixa ganha uma **alça** no topo: arraste por ela para colocar a caixa **em qualquer ponto da tela**,
   inclusive na faixa da câmera e por cima dos botões. Também dá para ajustar a **largura da caixa** (40% a 100%
   da tela). A posição fica salva, inclusive ao girar o celular.
+- **Travar na grade** (botão liga/desliga, na posição livre): **ligado**, a caixa fica presa à área segura, com
+  margem das bordas e sem cobrir a faixa da câmera nem a pílula do microfone e os botões; **desligado**, vai
+  para qualquer ponto da tela. Usar "Colocar o texto sobre a câmera frontal" destrava a grade, já que a lente
+  fica fora da área segura.
 - **Colocar o texto sobre a câmera frontal** (botão na engrenagem): para celulares com a câmera embutida na
   tela (furo ou entalhe), cola a caixa na lente, como num teleprompter de verdade: a lente fica dentro da alça
   e o texto começa logo abaixo dela, então o olhar fica praticamente na câmera. Na horizontal, a primeira linha

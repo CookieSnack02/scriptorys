@@ -105,6 +105,8 @@
     <string name="dica_livre">Arraste a caixa pela alça no topo dela para colocá-la onde quiser.</string>
     <string name="largura_texto">Largura da caixa: %1$d%%</string>
     <string name="cantos_arredondados">Cantos arredondados</string>
+    <string name="travar_grade">Travar na grade</string>
+    <string name="travar_grade_dica">Ligado: a caixa fica na área segura, sem cobrir a faixa da câmera nem os botões. Desligado: vai para qualquer ponto da tela.</string>
     <string name="sobre_camera">Colocar o texto sobre a câmera frontal</string>
     <string name="camera_nao_encontrada">Este celular não informa onde fica a câmera da tela: a caixa foi para o topo, ao centro. Ajuste pela alça, se preciso.</string>
     <string name="arrastar_texto">Arrastar a caixa de texto</string>

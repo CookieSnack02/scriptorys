@@ -69,6 +69,20 @@
                 android:text="@string/dica_livre"
                 android:textAppearance="?attr/textAppearanceBodySmall" />
 
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/interruptorGrade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/travar_grade"
+                android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/travar_grade_dica"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+
             <TextView
                 android:id="@+id/rotuloLarguraCamera"
                 style="@style/RotuloOpcao" />

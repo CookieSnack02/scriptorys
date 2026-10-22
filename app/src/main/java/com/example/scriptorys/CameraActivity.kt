@@ -114,6 +114,12 @@ class CameraActivity : AppCompatActivity() {
 
     /** A caixa fica colada na câmera frontal da tela (e se reposiciona ao girar o celular). */
     private var sobreCamera = false
+
+    /**
+     * Grade travada: a caixa livre fica na área segura (com margem, abaixo da faixa da câmera e acima
+     * dos controles). Destravada: pode ir a qualquer ponto da tela.
+     */
+    private var gradeTravada = false
     private var cantosArredondados = true
     private var tamanhoSp = 24
     private var corTexto = Color.WHITE
@@ -430,18 +436,31 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    /** Área onde a caixa pode ficar: a tela inteira, inclusive a faixa da câmera e por cima dos botões. */
+    /** Área onde a caixa pode ficar. */
     private data class Limites(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int)
 
+    /**
+     * Com a grade travada (e fora do encaixe na câmera), só a área segura; sem ela, a tela inteira,
+     * inclusive a faixa da câmera e por cima dos botões.
+     */
     private fun limitesLivre(largura: Int, altura: Int): Limites {
         val tela = caixaTexto.parent as View
-        return Limites(0, (tela.width - largura).coerceAtLeast(0), 0, (tela.height - altura).coerceAtLeast(0))
+        if (!gradeTravada || sobreCamera) {
+            return Limites(0, (tela.width - largura).coerceAtLeast(0), 0, (tela.height - altura).coerceAtLeast(0))
+        }
+        val margem = (12 * resources.displayMetrics.density).toInt()
+        val maxX = (tela.width - largura - margem).coerceAtLeast(margem)
+        val fundo = tela.height - barra.height - pilulaMicrofone.height - 2 * margem
+        val minY = margemTopo + margem
+        return Limites(margem, maxX, minY, (fundo - altura).coerceAtLeast(minY))
     }
 
     /** Coloca a caixa na posição livre salva (em frações, para continuar certa ao girar a tela). */
     private fun posicionarLivre() {
         val tela = caixaTexto.parent as View
-        val largura = (tela.width * larguraLivre / 100).coerceAtLeast(1)
+        // Na grade travada, 100% de largura respeita a margem das bordas.
+        val margens = if (gradeTravada && !sobreCamera) 2 * (12 * resources.displayMetrics.density).toInt() else 0
+        val largura = ((tela.width - margens) * larguraLivre / 100).coerceAtLeast(1)
         val altura = rolagem.layoutParams.height + alcaArrastar.layoutParams.height
         val l = limitesLivre(largura, altura)
         val (x, y) = if (sobreCamera) {
@@ -503,6 +522,8 @@ class CameraActivity : AppCompatActivity() {
     /** Botão "Sobre a câmera": passa para a posição livre com a caixa colada na câmera frontal. */
     private fun colocarSobreCamera() {
         posicao = PosicaoTexto.LIVRE
+        // A lente fica fora da área segura, então o encaixe destrava a grade.
+        gradeTravada = false
         sobreCamera = true
         aplicarPosicao()
         salvarPreferencias()
@@ -578,6 +599,17 @@ class CameraActivity : AppCompatActivity() {
             addOnChangeListener { _, valor, _ ->
                 larguraLivre = valor.toInt()
                 rotuloLargura.text = getString(R.string.largura_texto, larguraLivre)
+                aplicarPosicao()
+                salvarPreferencias()
+            }
+        }
+
+        painel.findViewById<MaterialSwitch>(R.id.interruptorGrade).apply {
+            isChecked = gradeTravada
+            setOnCheckedChangeListener { _, travada ->
+                gradeTravada = travada
+                // Travar tira a caixa de cima da câmera e a traz de volta para a área segura.
+                if (travada) sobreCamera = false
                 aplicarPosicao()
                 salvarPreferencias()
             }
@@ -901,6 +933,7 @@ class CameraActivity : AppCompatActivity() {
         larguraLivre = p.getInt("larguraLivre", 85)
         cantosArredondados = p.getBoolean("arredondado", true)
         sobreCamera = p.getBoolean("sobreCamera", false)
+        gradeTravada = p.getBoolean("gradeTravada", false)
     }
 
     private fun salvarPreferencias() {
@@ -914,6 +947,7 @@ class CameraActivity : AppCompatActivity() {
             .putInt("larguraLivre", larguraLivre)
             .putBoolean("arredondado", cantosArredondados)
             .putBoolean("sobreCamera", sobreCamera)
+            .putBoolean("gradeTravada", gradeTravada)
             .apply()
     }
 

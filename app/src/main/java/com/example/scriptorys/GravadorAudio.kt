@@ -41,6 +41,10 @@ class GravadorAudio(private val dispositivo: AudioDeviceInfo?, private val saida
 
     @Volatile
     private var ativo = false
+
+    /** Só fica true depois que o arquivo foi fechado por completo (pronto para ser lido). */
+    @Volatile
+    private var finalizado = false
     private var thread: Thread? = null
     private var gravouAlgo = false
 
@@ -63,15 +67,18 @@ class GravadorAudio(private val dispositivo: AudioDeviceInfo?, private val saida
         thread = Thread({ laco(gravador, tamanho, codificador, muxer) }, "GravadorAudio").apply { start() }
     }
 
-    /** Para e fecha o arquivo; aguarda a gravação terminar de escrever. */
+    /**
+     * Para e fecha o arquivo, esperando a gravação terminar de escrever. O limite de espera só
+     * existe para não travar o app se o microfone parar de responder; nesse caso [temAudio] é false.
+     */
     fun parar() {
         ativo = false
-        thread?.join(3000)
+        thread?.join(15_000)
         thread = null
     }
 
-    /** true se algum áudio foi gravado no arquivo (o arquivo pode ser usado). */
-    fun temAudio() = gravouAlgo && saida?.let { it.exists() && it.length() > 0 } == true
+    /** true se algum áudio foi gravado e o arquivo já foi fechado (pode ser usado). */
+    fun temAudio() = finalizado && gravouAlgo && saida?.let { it.exists() && it.length() > 0 } == true
 
     private fun criarCodificador(tamanho: Int): MediaCodec {
         val formato = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, TAXA, 1).apply {
@@ -127,6 +134,7 @@ class GravadorAudio(private val dispositivo: AudioDeviceInfo?, private val saida
             }
             muxer?.release()
             nivel = 0f
+            finalizado = true
         }
     }
 

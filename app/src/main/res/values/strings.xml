@@ -101,6 +101,11 @@
     <string name="posicao_texto">Posição do texto</string>
     <string name="topo">Topo</string>
     <string name="base">Base</string>
+    <string name="livre">Livre</string>
+    <string name="dica_livre">Arraste a caixa pela alça no topo dela para colocá-la onde quiser.</string>
+    <string name="largura_texto">Largura da caixa: %1$d%%</string>
+    <string name="cantos_arredondados">Cantos arredondados</string>
+    <string name="arrastar_texto">Arrastar a caixa de texto</string>
     <string name="cor_do_texto">Cor do texto</string>
     <string name="trocar_camera">Trocar câmera</string>
     <string name="permissao_camera_negada">Sem permissão de câmera não é possível usar este modo.</string>

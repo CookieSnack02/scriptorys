@@ -15,14 +15,36 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Caixa de texto sobre a câmera; a posição vertical é ajustada no código -->
+    <!--
+        Caixa de texto sobre a câmera. A posição (topo, centro, base ou livre), o fundo e os cantos
+        são ajustados no código; na posição livre, a alça no topo arrasta a caixa.
+    -->
+    <LinearLayout
+        android:id="@+id/caixaTextoCamera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginHorizontal="12dp"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/alcaArrastar"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:contentDescription="@string/arrastar_texto"
+            android:visibility="gone">
+
+            <View
+                android:layout_width="44dp"
+                android:layout_height="5dp"
+                android:layout_gravity="center"
+                android:background="@drawable/fundo_alca" />
+        </FrameLayout>
+
     <ScrollView
         android:id="@+id/rolagemCamera"
         android:layout_width="match_parent"
         android:layout_height="180dp"
-        android:layout_gravity="top"
-        android:layout_marginHorizontal="12dp"
-        android:background="#66000000"
         android:scrollbars="none">
 
         <TextView
@@ -37,6 +59,7 @@
             android:textColor="@color/white"
             android:textSize="24sp" />
     </ScrollView>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/semPermissao"

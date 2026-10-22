@@ -122,8 +122,13 @@ arquivos que abrir o APK.
 
 ### Câmera
 - Pede a permissão da câmera e mostra a imagem ao vivo (frontal ou traseira).
-- O roteiro rola numa caixa sobre a imagem, com **posição** (topo, centro, base), **tamanho**, **cor** e
-  **velocidade** ajustáveis. O texto aparece só na tela: **não sai no vídeo gravado**.
+- O roteiro rola numa caixa sobre a imagem, com **posição**, **tamanho**, **cor** e **velocidade** ajustáveis.
+  O texto aparece só na tela: **não sai no vídeo gravado**.
+- **Posição da caixa** (engrenagem → Posição do texto): **Topo**, **Centro**, **Base** ou **Livre**. Na posição
+  livre, a caixa ganha uma **alça** no topo: arraste por ela para colocar a caixa onde quiser (perto da lente,
+  por exemplo). Também dá para ajustar a **largura da caixa** (40% a 100% da tela). A posição fica salva,
+  inclusive ao girar o celular.
+- **Cantos arredondados**: liga ou desliga o arredondamento da caixa de texto.
 - **Gravar vídeo** (botão vermelho) com som do microfone escolhido. Veja a seção
   [Gravação de vídeo e microfone externo](#gravação-de-vídeo-e-microfone-externo).
 

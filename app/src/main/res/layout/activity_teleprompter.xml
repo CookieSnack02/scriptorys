@@ -199,6 +199,24 @@
             android:layout_width="0dp"
             android:layout_height="48dp" />
 
+        <!-- Valor da velocidade enquanto a régua é arrastada -->
+        <TextView
+            android:id="@+id/bolhaValor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/fundo_bolha"
+            android:elevation="4dp"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="5dp"
+            android:textColor="@color/texto_sobre_laranja"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/regua"
+            app:layout_constraintEnd_toEndOf="@id/regua"
+            app:layout_constraintStart_toStartOf="@id/regua" />
+
         <ImageButton
             android:id="@+id/iconeRapido"
             app:layout_constraintEnd_toEndOf="@id/fundoCartao"
@@ -296,17 +314,4 @@
             android:src="@drawable/ic_settings"
             app:tint="@color/white" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Aviso rápido (ex.: velocidade alterada pelo controle remoto) -->
-    <TextView
-        android:id="@+id/indicador"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/fundo_indicador"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="10dp"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:textColor="@color/white"
-        android:visibility="gone" />
 </FrameLayout>

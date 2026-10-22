@@ -5,6 +5,7 @@
     <string name="adicionar_script">Adicionar script</string>
     <string name="lista_vazia">Toque no + para criar seu primeiro script</string>
     <string name="dica_lista">Toque: abrir · Toque duplo: editar · Segurar: excluir</string>
+    <string name="dica_pasta">Toque na pasta para abrir · Segure para renomear ou excluir</string>
     <string name="sem_titulo">Sem título</string>
     <string name="excluir_titulo">Excluir script</string>
     <string name="excluir_mensagem">Deseja realmente excluir \"%1$s\"? Esta ação não pode ser desfeita.</string>
@@ -13,6 +14,25 @@
     <string name="escolher_modo">Como deseja usar este script?</string>
     <string name="teleprompter">Teleprompter</string>
     <string name="camera">Câmera</string>
+
+    <!-- Pastas -->
+    <string name="nova_pasta">Nova pasta</string>
+    <string name="nova_pasta_opcao">+ Nova pasta…</string>
+    <string name="nome_pasta">Nome da pasta</string>
+    <string name="renomear_pasta">Renomear pasta</string>
+    <string name="excluir_pasta">Excluir pasta</string>
+    <string name="excluir_pasta_mensagem">Excluir a pasta \"%1$s\"? Os scripts dela não serão apagados: voltam a ficar soltos, fora de pastas.</string>
+    <string name="sem_pasta">Sem pasta</string>
+    <string name="pasta_rotulo">Pasta: %1$s</string>
+    <string name="escolher_pasta">Mover para a pasta</string>
+    <string name="pasta_vazia">Pasta vazia. Toque no + para criar um script aqui.</string>
+    <string name="criar">Criar</string>
+    <string name="renomear">Renomear</string>
+    <string name="voltar_pastas">Voltar para todos os scripts</string>
+    <plurals name="quantidade_scripts">
+        <item quantity="one">%d script</item>
+        <item quantity="other">%d scripts</item>
+    </plurals>
 
     <!-- Editor -->
     <string name="novo_script">Novo script</string>

@@ -162,7 +162,8 @@ class ReguaVelocidade @JvmOverloads constructor(
         aoMudar?.invoke(valor, final)
     }
 
-    private fun encaixar(v: Float) = (minimo + ((v - minimo) / passo).roundToInt() * passo).coerceIn(minimo, maximo)
+    /** Valor arredondado para o tracinho mais próximo (o que a régua assume ao soltar). */
+    fun encaixar(v: Float) = (minimo + ((v - minimo) / passo).roundToInt() * passo).coerceIn(minimo, maximo)
     private fun indice(v: Float) = ((v - minimo) / passo).roundToInt()
     private fun posicaoPx(v: Float) = ((v - minimo) / passo * espacamento).toInt()
 

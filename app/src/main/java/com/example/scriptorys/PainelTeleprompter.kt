@@ -159,6 +159,7 @@ class PainelTeleprompter(private val painel: ConstraintLayout) {
         ).forEach { setVisibility(it, View.VISIBLE) }
         setVisibility(R.id.fundoAnterior, View.INVISIBLE)
         setVisibility(R.id.fundoPlay, View.INVISIBLE)
+        bolhaValor()
     }
 
     private fun compacto(horizontal: Boolean): ConstraintSet = completo(horizontal).apply {
@@ -207,6 +208,17 @@ class PainelTeleprompter(private val painel: ConstraintLayout) {
         ligar(R.id.regua, START, R.id.iconeLento, END, 6)
         ligar(R.id.regua, END, R.id.iconeRapido, START, 6)
         centralizarVertical(R.id.regua, R.id.fundoCartao)
+        bolhaValor()
+    }
+
+    /** O balão com o valor fica centrado logo acima da régua; quem o mostra e esconde é a tela. */
+    private fun ConstraintSet.bolhaValor() {
+        clear(R.id.bolhaValor)
+        tamanho(R.id.bolhaValor, WRAP_CONTENT, WRAP_CONTENT)
+        ligar(R.id.bolhaValor, START, R.id.regua, START, 0)
+        ligar(R.id.bolhaValor, END, R.id.regua, END, 0)
+        ligar(R.id.bolhaValor, BOTTOM, R.id.regua, TOP, 2)
+        setVisibilityMode(R.id.bolhaValor, ConstraintSet.VISIBILITY_MODE_IGNORE)
     }
 
     private fun ConstraintSet.barraSuperior(visibilidade: Int) {

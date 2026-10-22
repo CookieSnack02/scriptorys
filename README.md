@@ -125,9 +125,14 @@ arquivos que abrir o APK.
 - O roteiro rola numa caixa sobre a imagem, com **posição**, **tamanho**, **cor** e **velocidade** ajustáveis.
   O texto aparece só na tela: **não sai no vídeo gravado**.
 - **Posição da caixa** (engrenagem → Posição do texto): **Topo**, **Centro**, **Base** ou **Livre**. Na posição
-  livre, a caixa ganha uma **alça** no topo: arraste por ela para colocar a caixa onde quiser (perto da lente,
-  por exemplo). Também dá para ajustar a **largura da caixa** (40% a 100% da tela). A posição fica salva,
-  inclusive ao girar o celular.
+  livre, a caixa ganha uma **alça** no topo: arraste por ela para colocar a caixa **em qualquer ponto da tela**,
+  inclusive na faixa da câmera e por cima dos botões. Também dá para ajustar a **largura da caixa** (40% a 100%
+  da tela). A posição fica salva, inclusive ao girar o celular.
+- **Colocar o texto sobre a câmera frontal** (botão na engrenagem): para celulares com a câmera embutida na
+  tela (furo ou entalhe), cola a caixa na lente, como num teleprompter de verdade: a lente fica dentro da alça
+  e o texto começa logo abaixo dela, então o olhar fica praticamente na câmera. Na horizontal, a primeira linha
+  fica na altura da lente. A posição da lente vem do próprio Android (recorte da tela); se o celular não
+  informar, a caixa vai para o topo, ao centro. Arrastar a caixa desfaz o encaixe.
 - **Cantos arredondados**: liga ou desliga o arredondamento da caixa de texto.
 - **Gravar vídeo** (botão vermelho) com som do microfone escolhido. Veja a seção
   [Gravação de vídeo e microfone externo](#gravação-de-vídeo-e-microfone-externo).

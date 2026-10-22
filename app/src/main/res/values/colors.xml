@@ -20,4 +20,7 @@
     <color name="texto_sobre_laranja">#1A1A1A</color>
     <color name="painel">#F7232323</color>
     <color name="painel_borda">#3DFFFFFF</color>
+
+    <!-- Gravação de vídeo -->
+    <color name="gravando">#E53935</color>
 </resources>

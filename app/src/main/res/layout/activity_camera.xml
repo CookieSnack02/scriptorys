@@ -82,6 +82,27 @@
             app:icon="@drawable/ic_back"
             app:iconTint="@color/white" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoTrocarCamera"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/trocar_camera"
+            app:icon="@drawable/ic_switch_camera"
+            app:iconTint="@color/white" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/botaoGravar"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:background="@drawable/fundo_gravar"
+            android:contentDescription="@string/gravar_video" />
+
         <View
             android:layout_width="0dp"
             android:layout_height="1dp"
@@ -106,15 +127,6 @@
             app:iconTint="@color/white" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/botaoTrocarCamera"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/trocar_camera"
-            app:icon="@drawable/ic_switch_camera"
-            app:iconTint="@color/white" />
-
-        <com.google.android.material.button.MaterialButton
             android:id="@+id/botaoConfigCamera"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
@@ -122,6 +134,64 @@
             android:contentDescription="@string/configuracoes"
             app:icon="@drawable/ic_tune"
             app:iconTint="@color/white" />
+    </LinearLayout>
+
+    <!-- Microfone em uso (toque para trocar/testar); durante a gravação mostra volume e tempo -->
+    <LinearLayout
+        android:id="@+id/pilulaMicrofone"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/fundo_pilula_microfone"
+        android:clickable="true"
+        android:contentDescription="@string/escolher_microfone"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_mic"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/nomeMicrofone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:ellipsize="end"
+            android:maxWidth="200dp"
+            android:maxLines="1"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/medidorVolume"
+            android:layout_width="56dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:max="100"
+            android:visibility="gone"
+            app:indicatorColor="@color/laranja"
+            app:trackColor="#4DFFFFFF"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="6dp" />
+
+        <TextView
+            android:id="@+id/tempoGravacao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:drawablePadding="4dp"
+            android:fontFeatureSettings="tnum"
+            android:textColor="@color/gravando"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Aviso rápido (ex.: velocidade alterada pelo controle remoto) -->

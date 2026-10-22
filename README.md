@@ -31,6 +31,7 @@
 - [Funcionalidades](#funcionalidades)
 - [Fluxo de funcionamento](#fluxo-de-funcionamento)
 - [Como usar](#como-usar)
+- [Gravação de vídeo e microfone externo](#gravação-de-vídeo-e-microfone-externo)
 - [Controle remoto Bluetooth](#controle-remoto-bluetooth)
 - [Tecnologias](#tecnologias)
 - [Arquitetura e principais classes](#arquitetura-e-principais-classes)
@@ -51,7 +52,9 @@ O app foi pensado para três situações:
 1. **Teleprompter de vidro** (como os da Ulanzi): o celular fica sob um vidro inclinado, que reflete o texto
    na frente da lente da câmera. Por isso o texto pode ser **espelhado** e controlado por um **controle Bluetooth**.
 2. **Leitura direta na tela**: o celular fica de pé, na vertical ou na horizontal, mostrando o texto grande.
-3. **Gravação com o próprio celular**: o modo **Câmera** mostra a imagem da câmera com o roteiro rolando por cima.
+3. **Gravação com o próprio celular**: o modo **Câmera** mostra a imagem da câmera com o roteiro rolando por cima
+   e **grava o vídeo**, inclusive com **microfone externo** (como o Hollyland), que a câmera nativa de muitos
+   celulares ignora.
 
 A velocidade é medida em **palavras por minuto (ppm)**, como na fala real. Assim, "120 ppm" significa o mesmo
 ritmo em qualquer tamanho de letra ou de tela. Para quem prefere o jeito tradicional, há também o modo
@@ -120,7 +123,9 @@ arquivos que abrir o APK.
 ### Câmera
 - Pede a permissão da câmera e mostra a imagem ao vivo (frontal ou traseira).
 - O roteiro rola numa caixa sobre a imagem, com **posição** (topo, centro, base), **tamanho**, **cor** e
-  **velocidade** ajustáveis.
+  **velocidade** ajustáveis. O texto aparece só na tela: **não sai no vídeo gravado**.
+- **Gravar vídeo** (botão vermelho) com som do microfone escolhido. Veja a seção
+  [Gravação de vídeo e microfone externo](#gravação-de-vídeo-e-microfone-externo).
 
 ## Fluxo de funcionamento
 
@@ -172,6 +177,62 @@ Por dentro, o caminho de um roteiro é este:
 Dica para teleprompter de vidro: em **Configurações → Espelhar**, ative **Horizontal** para o reflexo
 no vidro ficar legível.
 
+## Gravação de vídeo e microfone externo
+
+### Como gravar
+1. Abra o roteiro em **Câmera** e toque no **botão vermelho**. Na primeira vez, o app pede permissão de
+   microfone (sem ela, o vídeo é gravado sem som).
+2. Durante a gravação, a pílula acima da barra mostra o **microfone em uso**, o **volume** e o **tempo**.
+   A tela fica travada na orientação atual, para girar o celular não interromper o vídeo.
+3. Toque no botão (agora um quadrado) para **parar**. O app junta imagem e som e mostra
+   "Vídeo salvo em …" com o botão **Abrir**.
+
+Sair da tela ou apagar o celular durante a gravação encerra e salva o vídeo.
+
+### Onde ficam os vídeos (soltos ou em pastas)
+Os vídeos vão para a galeria, em **Filmes (Movies) → Scriptorys**, com o nome do roteiro e a data
+(ex.: `Aula 1 2026-10-22 14-30-05.mp4`):
+
+| Opção | Pasta no celular |
+|---|---|
+| Sem pasta | `Movies/Scriptorys/` |
+| Pasta "Aulas" | `Movies/Scriptorys/Aulas/` |
+
+Por padrão o vídeo vai para a **mesma pasta do roteiro**. Para mudar, use **Configurações (engrenagem) →
+Salvar vídeos em** na tela da câmera.
+
+### Microfone externo (Hollyland e outros)
+Toque na pílula **🎤** acima da barra para escolher o microfone:
+
+- **Automático** (padrão): usa o melhor microfone externo conectado (USB, depois fone com fio, depois
+  Bluetooth). Sem nenhum conectado, usa o do celular.
+- Ou escolha um microfone específico da lista (ex.: **Hollyland Lark (USB)**).
+
+Na mesma janela há um **teste de volume**: fale no microfone e veja a barra se mexer. A linha
+**"Captando por: …"** mostra o microfone que o Android **realmente** está usando. Se o app pedir um
+microfone e o Android usar outro, aparece um aviso também durante a gravação. Se o microfone escolhido for
+desconectado, o app volta ao automático e avisa.
+
+**Como conferir que o Hollyland está gravando:**
+1. Conecte o receptor do Hollyland no celular (USB-C ou cabo de 3,5 mm).
+2. Abra a pílula 🎤: o Hollyland deve aparecer na lista, e o automático já o escolhe.
+3. Fale perto do **transmissor** (longe do celular): a barra deve se mexer e "Captando por" deve
+   mostrar o Hollyland.
+4. Grave alguns segundos e ouça o vídeo: o som deve ter a qualidade do microfone de lapela.
+5. Para conferir a sincronia, bata uma palma de frente para a câmera e veja se som e imagem coincidem.
+
+**Por que funciona onde a câmera nativa falha:** muitas câmeras nativas sempre gravam pelo microfone interno.
+O CameraX (usado aqui) também não permite escolher o microfone, só o tipo de fonte. Por isso o app grava
+**a imagem pelo CameraX** e **o som à parte**, pedindo ao Android exatamente o microfone escolhido
+(`AudioRecord.setPreferredDevice`). Ao parar, os dois são **alinhados pelo relógio do sistema** e unidos
+num único MP4 (`MediaMuxer`), sem perder qualidade (nada é recodificado na junção).
+
+> Microfones **Bluetooth** comuns só gravam em qualidade de chamada, e alguns celulares não os liberam para
+> gravação. Para o Hollyland, prefira o receptor **USB-C** ou o **cabo de 3,5 mm**.
+
+Para diagnosticar, conecte o celular ao Android Studio e filtre o **Logcat** por `CameraActivity`:
+a cada vídeo salvo aparece o microfone usado e o ajuste de sincronia aplicado.
+
 ## Controle remoto Bluetooth
 
 O app aceita controles Bluetooth como o **MOCUTE-052** que acompanha os teleprompters **Ulanzi**, em qualquer
@@ -199,7 +260,10 @@ Para descobrir o que um botão envia, conecte o celular ao Android Studio e filt
 | **ConstraintLayout 2.2.2** (`ConstraintSet` + `TransitionManager`) | Layouts e animação entre os estados do painel |
 | **RecyclerView 1.4.0** | Lista de scripts |
 | **Material Components 1.14.0** (Material 3) | Botões, diálogos, painéis inferiores, sliders, chips |
-| **CameraX 1.6.2** (`camera-camera2`, `camera-lifecycle`, `camera-view`) | Prévia da câmera |
+| **CameraX 1.6.2** (`camera-camera2`, `camera-lifecycle`, `camera-view`, `camera-video`) | Prévia e gravação da imagem |
+| **AudioRecord + MediaCodec (AAC)** | Gravação do som pelo microfone escolhido |
+| **MediaExtractor + MediaMuxer** | Junção de imagem e som num MP4 |
+| **MediaStore** | Salvar os vídeos na galeria (`Movies/Scriptorys`) |
 | **jsoup 1.23.2** | Leitura do HTML copiado de Word/Docs ao colar |
 | **org.json** (Android) | Gravação dos scripts em JSON |
 | **JUnit + AndroidX Test** | Testes instrumentados |
@@ -225,7 +289,10 @@ em classes pequenas.
 | `RolagemAutomatica` | Motor de rolagem suave (ppm, rolagem fixa e controle) | `iniciar()`, `pausar()`, `parar()`, `empurrar()`, `segurar()`, `deslizarPara()`, `doFrame()` |
 | `ControleRemoto` | Tradução das teclas/eixos do controle Bluetooth | `tecla(KeyEvent)`, `movimento(MotionEvent)` |
 | `ConfigTeleprompter` | Preferências do teleprompter (`SharedPreferences`) | `carregar()`, `salvar()`, `corFundo()`, `corTexto()` |
-| `CameraActivity` | Câmera com texto sobreposto | `iniciarCamera()`, `aplicarAparencia()`, `aplicarPosicao()` |
+| `CameraActivity` | Câmera com texto sobreposto e gravação de vídeo | `iniciarCamera()`, `alternarGravacao()`, `iniciarGravacao()`, `finalizarGravacao()`, `abrirEscolhaMicrofone()` |
+| `Microfones` | Lista os microfones (celular, USB, fio, Bluetooth) e escolhe o automático | `listar()`, `automatico()`, `nome()` |
+| `GravadorAudio` | Grava AAC pelo microfone escolhido, mede o volume e marca o início do som | `iniciar()`, `parar()`, `nivel`, `inicioNanos`, `dispositivoEmUso` |
+| `MontadorVideo` | Junta imagem e som alinhados e salva na galeria | `juntar()`, `salvarNaGaleria()` |
 
 ## Instalação
 
@@ -258,7 +325,8 @@ No Windows, use `gradlew.bat assembleDebug`.
 
 ## Testes
 
-Os testes instrumentados ficam em `app/src/androidTest`. `ScriptRepositoryTest` verifica as pastas (criar,
+Os testes instrumentados ficam em `app/src/androidTest`. `GravadorAudioTest` verifica a gravação de som
+(arquivo AAC, duração, início marcado e microfone registrado) e o teste de volume. `ScriptRepositoryTest` verifica as pastas (criar,
 renomear, mover roteiros e excluir a pasta sem perder os roteiros) e `ColagemFormatadaTest` verifica a colagem
 com formatação
 (HTML no formato do Google Docs, estilos por classe CSS, colagem no editor, colagem pela barra do teclado e
@@ -293,7 +361,10 @@ app/src/main/
 │   ├── RolagemAutomatica.kt      # motor de rolagem
 │   ├── ControleRemoto.kt         # controle Bluetooth
 │   ├── ConfigTeleprompter.kt     # preferências
-│   ├── CameraActivity.kt         # modo câmera
+│   ├── CameraActivity.kt         # modo câmera e gravação de vídeo
+│   ├── Microfones.kt             # lista e escolha de microfones
+│   ├── GravadorAudio.kt          # gravação de som pelo microfone escolhido
+│   ├── MontadorVideo.kt          # junta imagem e som e salva na galeria
 │   └── Texto.kt                  # contagem de palavras
 └── res/
     ├── layout/                   # telas, itens e painéis de opções

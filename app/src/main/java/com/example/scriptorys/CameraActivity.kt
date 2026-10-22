@@ -1,6 +1,36 @@
 package com.example.scriptorys
 
 import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.pm.ActivityInfo
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.view.Surface
+import android.widget.ImageButton
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.LinearProgressIndicator
+import com.google.android.material.snackbar.Snackbar
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import kotlin.concurrent.thread
+import kotlin.math.sqrt
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -49,7 +79,12 @@ import com.google.android.material.slider.Slider
 
 enum class PosicaoTexto { TOPO, CENTRO, BASE }
 
-/** Câmera ao vivo com o script rolando por cima. */
+/**
+ * Câmera ao vivo com o script rolando por cima, e gravação de vídeo.
+ *
+ * A imagem é gravada pelo CameraX e o som pelo [GravadorAudio], que usa o microfone escolhido
+ * (ex.: Hollyland via USB). Ao parar, o [MontadorVideo] junta os dois num MP4 na galeria.
+ */
 class CameraActivity : AppCompatActivity() {
 
     private lateinit var previa: PreviewView
@@ -67,6 +102,66 @@ class CameraActivity : AppCompatActivity() {
     private var tamanhoSp = 24
     private var corTexto = Color.WHITE
     private var palavrasPorMinuto = 120
+
+    // Gravação
+    private lateinit var botaoGravar: ImageButton
+    private lateinit var botaoTrocarCamera: View
+    private lateinit var pilulaMicrofone: View
+    private lateinit var nomeMicrofone: TextView
+    private lateinit var medidorVolume: LinearProgressIndicator
+    private lateinit var tempoGravacao: TextView
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var gravacao: Recording? = null
+    private var gravadorAudio: GravadorAudio? = null
+    private var gravando = false
+    private var inicioVideoNanos = Long.MAX_VALUE
+    private val pastaGravacao by lazy { File(cacheDir, "gravacao") }
+    private lateinit var tituloScript: String
+
+    /** Pasta (do app) onde os vídeos são salvos; null = solto em Filmes/Scriptorys. */
+    private var pastaVideo: Long? = null
+
+    /** null + automático = melhor microfone externo conectado, ou o do celular. */
+    private var microfoneEscolhido: AudioDeviceInfo? = null
+    private var microfoneAutomatico = true
+    private val principal = Handler(Looper.getMainLooper())
+
+    private val atualizarMedidor = object : Runnable {
+        override fun run() {
+            val audio = gravadorAudio ?: return
+            medidorVolume.progress = (sqrt(audio.nivel) * 100).toInt()
+            principal.postDelayed(this, 80)
+        }
+    }
+
+    private val observadorMicrofones = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(adicionados: Array<out AudioDeviceInfo>) = atualizarNomeMicrofone()
+
+        override fun onAudioDevicesRemoved(removidos: Array<out AudioDeviceInfo>) {
+            val escolhido = microfoneEscolhido
+            if (!microfoneAutomatico && escolhido != null && removidos.any { it.id == escolhido.id }) {
+                microfoneAutomatico = true
+                microfoneEscolhido = null
+                Toast.makeText(this@CameraActivity, getString(R.string.microfone_desconectado, nomeDoMicrofoneAtual()), Toast.LENGTH_LONG).show()
+            }
+            atualizarNomeMicrofone()
+        }
+    }
+
+    private val pedirPermissoesGravacao = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultado ->
+        if (precisaPermissaoArmazenamento() && !permitido(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            Toast.makeText(this, R.string.permissao_armazenamento_negada, Toast.LENGTH_LONG).show()
+            return@registerForActivityResult
+        }
+        val comAudio = resultado[Manifest.permission.RECORD_AUDIO] ?: permitido(Manifest.permission.RECORD_AUDIO)
+        if (!comAudio) Toast.makeText(this, R.string.permissao_microfone_negada, Toast.LENGTH_LONG).show()
+        iniciarGravacao(comAudio)
+    }
+
+    private val pedirMicrofoneParaTeste = registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedida ->
+        if (concedida) abrirEscolhaMicrofone()
+        else Toast.makeText(this, R.string.permissao_microfone_negada, Toast.LENGTH_LONG).show()
+    }
 
     private val pedirPermissao = registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedida ->
         if (concedida) iniciarCamera() else mostrarSemPermissao()
@@ -95,6 +190,16 @@ class CameraActivity : AppCompatActivity() {
         barra = findViewById(R.id.barraCamera)
         semPermissao = findViewById(R.id.semPermissao)
         botaoPlay = findViewById(R.id.botaoPlayCamera)
+
+        botaoGravar = findViewById(R.id.botaoGravar)
+        botaoTrocarCamera = findViewById(R.id.botaoTrocarCamera)
+        pilulaMicrofone = findViewById(R.id.pilulaMicrofone)
+        nomeMicrofone = findViewById(R.id.nomeMicrofone)
+        medidorVolume = findViewById(R.id.medidorVolume)
+        tempoGravacao = findViewById(R.id.tempoGravacao)
+        tituloScript = script.titulo.ifBlank { getString(R.string.sem_titulo) }
+        // Por padrão, os vídeos vão para a mesma pasta do script.
+        pastaVideo = script.pastaId
 
         // Sobre a câmera o texto usa uma cor única, escolhida pelo usuário.
         texto.text = Html.paraTexto(script.html).toString()
@@ -134,10 +239,18 @@ class CameraActivity : AppCompatActivity() {
             atualizarPlay()
         }
         botaoPlay.setOnClickListener { alternarPlay() }
-        findViewById<Button>(R.id.botaoTrocarCamera).setOnClickListener {
+        botaoTrocarCamera.setOnClickListener {
             cameraFrontal = !cameraFrontal
             iniciarCamera()
         }
+        botaoGravar.setOnClickListener { alternarGravacao() }
+        pilulaMicrofone.setOnClickListener {
+            if (gravando) return@setOnClickListener
+            if (permitido(Manifest.permission.RECORD_AUDIO)) abrirEscolhaMicrofone()
+            else pedirMicrofoneParaTeste.launch(Manifest.permission.RECORD_AUDIO)
+        }
+        getSystemService(AudioManager::class.java)?.registerAudioDeviceCallback(observadorMicrofones, principal)
+        atualizarNomeMicrofone()
         findViewById<Button>(R.id.botaoConfigCamera).setOnClickListener { abrirConfiguracoes() }
         findViewById<Button>(R.id.botaoPermissao).setOnClickListener { solicitarPermissaoNovamente() }
 
@@ -164,6 +277,14 @@ class CameraActivity : AppCompatActivity() {
             rolador.parar()
             atualizarPlay()
         }
+        // Sair da tela (ou apagar o celular) encerra e salva a gravação em andamento.
+        if (gravando) pararGravacao()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        getSystemService(AudioManager::class.java)?.unregisterAudioDeviceCallback(observadorMicrofones)
+        principal.removeCallbacks(atualizarMedidor)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean =
@@ -178,8 +299,13 @@ class CameraActivity : AppCompatActivity() {
         outState.putInt(ESTADO_ROLAGEM, rolagem.scrollY)
     }
 
-    private fun temPermissao() =
-        ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    private fun temPermissao() = permitido(Manifest.permission.CAMERA)
+
+    private fun permitido(permissao: String) =
+        ContextCompat.checkSelfPermission(this, permissao) == PackageManager.PERMISSION_GRANTED
+
+    /** Até o Android 9, salvar na galeria exige permissão de armazenamento. */
+    private fun precisaPermissaoArmazenamento() = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
     private fun mostrarSemPermissao() {
         semPermissao.visibility = View.VISIBLE
@@ -207,8 +333,20 @@ class CameraActivity : AppCompatActivity() {
                 }
                 val preview = Preview.Builder().build()
                 preview.setSurfaceProvider(previa.surfaceProvider)
+                val gravador = Recorder.Builder()
+                    .setQualitySelector(QualitySelector.from(Quality.FHD, FallbackStrategy.lowerQualityOrHigherThan(Quality.FHD)))
+                    .build()
+                val captura = VideoCapture.withOutput(gravador)
                 provedor.unbindAll()
-                provedor.bindToLifecycle(this, seletor, preview)
+                videoCapture = try {
+                    provedor.bindToLifecycle(this, seletor, preview, captura)
+                    captura
+                } catch (e: IllegalArgumentException) {
+                    // Câmera sem suporte a prévia + vídeo juntos: mantém só a prévia.
+                    Log.w("CameraActivity", "Gravação de vídeo indisponível nesta câmera", e)
+                    provedor.bindToLifecycle(this, seletor, preview)
+                    null
+                }
             } catch (e: Exception) {
                 Log.e("CameraActivity", "Falha ao abrir a câmera", e)
                 Toast.makeText(this, R.string.erro_camera, Toast.LENGTH_LONG).show()
@@ -254,8 +392,9 @@ class CameraActivity : AppCompatActivity() {
                     PosicaoTexto.BASE -> Gravity.BOTTOM
                 }
                 topMargin = if (posicao == PosicaoTexto.TOPO) margemTopo + margem else 0
-                bottomMargin = if (posicao == PosicaoTexto.BASE) barra.height + margem else 0
+                bottomMargin = if (posicao == PosicaoTexto.BASE) barra.height + pilulaMicrofone.height + 2 * margem else 0
             }
+            pilulaMicrofone.updateLayoutParams<FrameLayout.LayoutParams> { bottomMargin = barra.height + margem }
         }
     }
 
@@ -321,7 +460,258 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
+        val grupoPasta = painel.findViewById<ChipGroup>(R.id.grupoPastaVideo)
+        val opcoesPasta = listOf<Pair<Long?, String>>(null to getString(R.string.sem_pasta)) +
+            ScriptRepository(this).listarPastas().map { it.id to it.nome }
+        opcoesPasta.forEach { (id, nome) ->
+            grupoPasta.addView(Chip(this).apply {
+                this.id = View.generateViewId()
+                text = nome
+                isCheckable = true
+                isChecked = id == pastaVideo
+                setOnCheckedChangeListener { _, marcado -> if (marcado) pastaVideo = id }
+            })
+        }
+
         dialogo.show()
+    }
+
+    // ---- Gravação de vídeo ----
+
+    private fun alternarGravacao() {
+        if (gravando) {
+            pararGravacao()
+            return
+        }
+        if (videoCapture == null) {
+            Toast.makeText(this, R.string.erro_gravacao, Toast.LENGTH_LONG).show()
+            return
+        }
+        val faltam = buildList {
+            if (!permitido(Manifest.permission.RECORD_AUDIO)) add(Manifest.permission.RECORD_AUDIO)
+            if (precisaPermissaoArmazenamento() && !permitido(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
+        if (faltam.isEmpty()) iniciarGravacao(comAudio = true) else pedirPermissoesGravacao.launch(faltam.toTypedArray())
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun iniciarGravacao(comAudio: Boolean) {
+        val captura = videoCapture ?: return
+        pastaGravacao.mkdirs()
+        val video = File(pastaGravacao, "video.mp4").apply { delete() }
+        val audio = File(pastaGravacao, "audio.m4a").apply { delete() }
+
+        // Girar o celular durante a gravação recriaria a tela e cortaria o vídeo.
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
+        captura.targetRotation = previa.display?.rotation ?: Surface.ROTATION_0
+        inicioVideoNanos = Long.MAX_VALUE
+
+        gravacao = captura.output
+            .prepareRecording(this, FileOutputOptions.Builder(video).build())
+            .start(ContextCompat.getMainExecutor(this)) { evento -> tratarEvento(evento, video, audio) }
+
+        if (comAudio) {
+            val pedido = microfoneParaGravar()
+            gravadorAudio = try {
+                GravadorAudio(pedido, audio).also { it.iniciar() }
+            } catch (e: Exception) {
+                Log.e("CameraActivity", "Falha ao abrir o microfone", e)
+                Toast.makeText(this, R.string.gravando_sem_som, Toast.LENGTH_LONG).show()
+                null
+            }
+            // Confere, logo depois de começar, se o Android usou mesmo o microfone pedido.
+            principal.postDelayed({ conferirMicrofoneEmUso(pedido) }, 600)
+        }
+
+        gravando = true
+        atualizarBotoesGravacao()
+        principal.post(atualizarMedidor)
+    }
+
+    private fun tratarEvento(evento: VideoRecordEvent, video: File, audio: File) {
+        when (evento) {
+            is VideoRecordEvent.Status -> {
+                val duracao = evento.recordingStats.recordedDurationNanos
+                // O primeiro quadro foi gravado "duração" atrás; o menor valor é a melhor estimativa.
+                inicioVideoNanos = minOf(inicioVideoNanos, System.nanoTime() - duracao)
+                val segundos = duracao / 1_000_000_000L
+                tempoGravacao.text = String.format(Locale.ROOT, "● %02d:%02d", segundos / 60, segundos % 60)
+            }
+            is VideoRecordEvent.Finalize -> finalizarGravacao(evento, video, audio)
+            else -> Unit
+        }
+    }
+
+    private fun pararGravacao() {
+        gravacao?.stop()
+        gravacao = null
+    }
+
+    private fun finalizarGravacao(evento: VideoRecordEvent.Finalize, video: File, audio: File) {
+        gravando = false
+        principal.removeCallbacks(atualizarMedidor)
+        atualizarBotoesGravacao()
+        atualizarNomeMicrofone()
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+        val gravadorDoAudio = gravadorAudio
+        gravadorAudio = null
+        if (evento.hasError()) Log.w("CameraActivity", "Gravação terminou com o código ${evento.error}", evento.cause)
+        if (!video.exists() || video.length() == 0L) {
+            gravadorDoAudio?.parar()
+            Toast.makeText(this, R.string.erro_gravacao, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        Toast.makeText(this, R.string.salvando_video, Toast.LENGTH_SHORT).show()
+        val app = applicationContext
+        val inicioVideo = inicioVideoNanos
+        val data = SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.ROOT).format(Date())
+        val nomeArquivo = "${MontadorVideo.nomeSeguro(tituloScript)} $data"
+        val subpasta = pastaVideo?.let { id -> ScriptRepository(app).listarPastas().firstOrNull { it.id == id }?.nome }
+        val local = listOfNotNull(Environment.DIRECTORY_MOVIES, MontadorVideo.PASTA_BASE, subpasta?.let(MontadorVideo::nomeSeguro)).joinToString("/")
+
+        thread(name = "SalvarVideo") {
+            try {
+                gravadorDoAudio?.parar()
+                val comSom = gravadorDoAudio?.temAudio() == true && inicioVideo != Long.MAX_VALUE
+                val deslocamentoUs = if (comSom) (gravadorDoAudio!!.inicioNanos - inicioVideo) / 1000 else 0L
+                Log.i(
+                    "CameraActivity",
+                    "Vídeo: som=$comSom, áudio deslocado ${deslocamentoUs / 1000} ms, microfone=" +
+                        (gravadorDoAudio?.dispositivoEmUso?.let { Microfones.nome(app, it) } ?: "nenhum"),
+                )
+                val final = File(pastaGravacao, "final.mp4")
+                MontadorVideo.juntar(video, if (comSom) audio else null, deslocamentoUs, final)
+                val uri = MontadorVideo.salvarNaGaleria(app, final, nomeArquivo, subpasta) ?: error("A galeria recusou o vídeo")
+                listOf(video, audio, final).forEach { it.delete() }
+                principal.post { avisarVideoSalvo(uri, local) }
+            } catch (e: Exception) {
+                Log.e("CameraActivity", "Falha ao salvar o vídeo", e)
+                principal.post { Toast.makeText(app, R.string.erro_gravacao, Toast.LENGTH_LONG).show() }
+            }
+        }
+    }
+
+    private fun avisarVideoSalvo(uri: android.net.Uri, local: String) {
+        val mensagem = getString(R.string.video_salvo, local)
+        if (isDestroyed) {
+            Toast.makeText(applicationContext, mensagem, Toast.LENGTH_LONG).show()
+            return
+        }
+        Snackbar.make(findViewById(R.id.raizCamera), mensagem, Snackbar.LENGTH_LONG)
+            .setAnchorView(pilulaMicrofone)
+            .setAction(R.string.abrir) {
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "video/mp4").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))
+                } catch (e: ActivityNotFoundException) {
+                    Log.w("CameraActivity", "Nenhum app para abrir o vídeo", e)
+                }
+            }
+            .show()
+    }
+
+    private fun atualizarBotoesGravacao() {
+        botaoGravar.setBackgroundResource(if (gravando) R.drawable.fundo_gravando else R.drawable.fundo_gravar)
+        botaoGravar.contentDescription = getString(if (gravando) R.string.parar_gravacao else R.string.gravar_video)
+        botaoTrocarCamera.isEnabled = !gravando
+        botaoTrocarCamera.alpha = if (gravando) 0.4f else 1f
+        medidorVolume.visibility = if (gravando && gravadorAudio != null) View.VISIBLE else View.GONE
+        tempoGravacao.visibility = if (gravando) View.VISIBLE else View.GONE
+        if (gravando) tempoGravacao.text = getString(R.string.tempo_inicial)
+    }
+
+    // ---- Microfone ----
+
+    private fun microfoneParaGravar(): AudioDeviceInfo? =
+        if (microfoneAutomatico) Microfones.automatico(Microfones.listar(this))?.dispositivo else microfoneEscolhido
+
+    private fun nomeDoMicrofoneAtual(): String =
+        microfoneParaGravar()?.let { Microfones.nome(this, it) } ?: getString(R.string.microfone_celular)
+
+    private fun atualizarNomeMicrofone() {
+        if (!gravando) nomeMicrofone.text = nomeDoMicrofoneAtual()
+        aplicarPosicao()
+    }
+
+    /** Mostra na pílula o microfone que está de fato gravando, e avisa se não for o escolhido. */
+    private fun conferirMicrofoneEmUso(pedido: AudioDeviceInfo?) {
+        val emUso = gravadorAudio?.dispositivoEmUso ?: return
+        nomeMicrofone.text = Microfones.nome(this, emUso)
+        if (pedido != null && emUso.id != pedido.id) {
+            Toast.makeText(this, getString(R.string.microfone_trocado, Microfones.nome(this, emUso)), Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** Lista os microfones e deixa testar o volume de cada um antes de gravar. */
+    @SuppressLint("MissingPermission")
+    private fun abrirEscolhaMicrofone() {
+        val conteudo = LayoutInflater.from(this).inflate(R.layout.dialogo_microfone, null)
+        val grupo = conteudo.findViewById<RadioGroup>(R.id.grupoMicrofones)
+        val medidor = conteudo.findViewById<LinearProgressIndicator>(R.id.medidorTeste)
+        val captando = conteudo.findViewById<TextView>(R.id.captandoPor)
+
+        val lista = Microfones.listar(this)
+        val automatico = Microfones.automatico(lista)
+        // Opção 0 = automático; as demais, cada microfone conectado.
+        val opcoes: List<Pair<String, AudioDeviceInfo?>> =
+            listOf(getString(R.string.microfone_automatico, automatico?.nome ?: getString(R.string.microfone_celular)) to null) +
+                lista.map { it.nome to it.dispositivo }
+        val marcada = if (microfoneAutomatico) 0 else opcoes.indexOfFirst { it.second?.id == microfoneEscolhido?.id }.coerceAtLeast(0)
+
+        var teste: GravadorAudio? = null
+        fun testar(dispositivo: AudioDeviceInfo?) {
+            teste?.parar()
+            captando.setText(R.string.microfone_aguardando)
+            teste = try {
+                GravadorAudio(dispositivo ?: automatico?.dispositivo, null).also { it.iniciar() }
+            } catch (e: Exception) {
+                Log.e("CameraActivity", "Falha ao testar o microfone", e)
+                captando.setText(R.string.gravando_sem_som)
+                null
+            }
+        }
+        val atualizarTeste = object : Runnable {
+            override fun run() {
+                teste?.let { t ->
+                    medidor.progress = (sqrt(t.nivel) * 100).toInt()
+                    t.dispositivoEmUso?.let { captando.text = getString(R.string.microfone_captando, Microfones.nome(this@CameraActivity, it)) }
+                }
+                principal.postDelayed(this, 80)
+            }
+        }
+
+        opcoes.forEachIndexed { indice, (nome, _) ->
+            grupo.addView(RadioButton(this).apply {
+                id = View.generateViewId()
+                text = nome
+                tag = indice
+                isChecked = indice == marcada
+            })
+        }
+        grupo.setOnCheckedChangeListener { g, idMarcado ->
+            val indice = g.findViewById<View>(idMarcado)?.tag as? Int ?: return@setOnCheckedChangeListener
+            microfoneAutomatico = indice == 0
+            microfoneEscolhido = opcoes[indice].second
+            testar(opcoes[indice].second)
+            atualizarNomeMicrofone()
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.microfone_titulo)
+            .setView(conteudo)
+            .setPositiveButton(R.string.ok, null)
+            .setOnDismissListener {
+                principal.removeCallbacks(atualizarTeste)
+                teste?.parar()
+                teste = null
+                atualizarNomeMicrofone()
+            }
+            .show()
+        testar(opcoes[marcada].second)
+        principal.post(atualizarTeste)
     }
 
     private fun carregarPreferencias() {

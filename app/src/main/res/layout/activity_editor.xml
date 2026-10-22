@@ -52,6 +52,18 @@
         android:textAppearance="?attr/textAppearanceHeadlineSmall"
         android:textStyle="bold" />
 
+    <!-- Pasta do script (opcional: "Sem pasta" deixa o script solto) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/botaoPasta"
+        style="@style/Widget.Material3.Button.TextButton.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:text="@string/sem_pasta"
+        android:textColor="@color/navy_blue"
+        app:icon="@drawable/ic_folder"
+        app:iconTint="@color/navy_blue" />
+
     <!-- Barra de formatação do texto rico -->
     <HorizontalScrollView
         android:layout_width="match_parent"

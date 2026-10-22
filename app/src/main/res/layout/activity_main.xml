@@ -19,6 +19,63 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Criar pasta (só na lista principal) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/botaoNovaPasta"
+        style="@style/Widget.Material3.Button.IconButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/nova_pasta"
+        app:icon="@drawable/ic_nova_pasta"
+        app:iconSize="28dp"
+        app:iconTint="@color/navy_blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Cabeçalho mostrado dentro de uma pasta -->
+    <LinearLayout
+        android:id="@+id/barraPasta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/logo">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoSairPasta"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/voltar_pastas"
+            app:icon="@drawable/ic_back"
+            app:iconTint="@color/navy" />
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_folder"
+            app:tint="@color/navy_blue" />
+
+        <TextView
+            android:id="@+id/tituloPasta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceTitleLarge"
+            android:textColor="@color/navy"
+            android:textStyle="bold" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/dica"
         android:layout_width="0dp"
@@ -31,7 +88,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/logo" />
+        app:layout_constraintTop_toBottomOf="@id/barraPasta" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/listaScripts"

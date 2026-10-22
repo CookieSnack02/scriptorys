@@ -31,6 +31,9 @@ class EditorActivity : AppCompatActivity() {
     private lateinit var campoTitulo: EditText
     private lateinit var campoTexto: EditText
     private var scriptId: Long? = null
+    private var pastaId: Long? = null
+    private var pastaOriginal: Long? = null
+    private lateinit var botaoPasta: Button
     private var tituloOriginal = ""
     private var htmlOriginal = ""
 
@@ -50,14 +53,30 @@ class EditorActivity : AppCompatActivity() {
 
         scriptId = intent.getLongExtra(EXTRA_ID, -1L).takeIf { it != -1L }
         htmlOriginal = Html.deTexto("")
+        // Script novo criado de dentro de uma pasta já nasce nela.
+        pastaOriginal = intent.getLongExtra(EXTRA_PASTA, -1L).takeIf { it != -1L }
         scriptId?.let { repositorio.buscar(it) }?.let { script ->
             findViewById<TextView>(R.id.tituloTela).setText(R.string.editar_script)
             val texto = Html.paraTexto(script.html)
             tituloOriginal = script.titulo
             htmlOriginal = Html.deTexto(texto)
+            pastaOriginal = script.pastaId
             if (savedInstanceState == null) {
                 campoTitulo.setText(script.titulo)
                 campoTexto.setText(texto)
+            }
+        }
+        pastaId = if (savedInstanceState?.containsKey(ESTADO_PASTA) == true) {
+            savedInstanceState.getLong(ESTADO_PASTA).takeIf { it != -1L }
+        } else {
+            pastaOriginal
+        }
+        botaoPasta = findViewById(R.id.botaoPasta)
+        atualizarBotaoPasta()
+        botaoPasta.setOnClickListener {
+            DialogosPasta.escolher(this, repositorio, pastaId) { escolhida ->
+                pastaId = escolhida
+                atualizarBotaoPasta()
             }
         }
 
@@ -82,15 +101,26 @@ class EditorActivity : AppCompatActivity() {
         })
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(ESTADO_PASTA, pastaId ?: -1L)
+    }
+
+    private fun atualizarBotaoPasta() {
+        botaoPasta.text = getString(R.string.pasta_rotulo, DialogosPasta.nome(this, repositorio, pastaId))
+    }
+
     private fun houveAlteracao() =
-        campoTitulo.text.toString() != tituloOriginal || Html.deTexto(campoTexto.text) != htmlOriginal
+        campoTitulo.text.toString() != tituloOriginal ||
+            Html.deTexto(campoTexto.text) != htmlOriginal ||
+            pastaId != pastaOriginal
 
     private fun salvar() {
         if (campoTexto.text.isBlank()) {
             Toast.makeText(this, R.string.script_vazio, Toast.LENGTH_SHORT).show()
             return
         }
-        repositorio.salvar(scriptId, campoTitulo.text.toString().trim(), Html.deTexto(campoTexto.text))
+        repositorio.salvar(scriptId, campoTitulo.text.toString().trim(), Html.deTexto(campoTexto.text), pastaId)
         finish()
     }
 
@@ -222,6 +252,8 @@ class EditorActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_ID = "id"
+        const val EXTRA_PASTA = "pasta"
+        private const val ESTADO_PASTA = "pasta"
 
         private val CORES_TEXTO = listOf(
             "Padrão" to null,

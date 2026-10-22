@@ -55,7 +55,7 @@ class TeleprompterActivity : AppCompatActivity() {
     private lateinit var botaoPlay: ImageButton
     private lateinit var rolador: RolagemAutomatica
     private lateinit var controle: ControleRemoto
-    private lateinit var indicador: TextView
+    private lateinit var bolhaValor: TextView
 
     private var scriptId = -1L
     private var painelRodando = false
@@ -86,7 +86,7 @@ class TeleprompterActivity : AppCompatActivity() {
         rotuloModo = findViewById(R.id.rotuloModo)
         rotuloVizinho = findViewById(R.id.rotuloVizinho)
         botaoPlay = findViewById(R.id.botaoPlay)
-        indicador = findViewById(R.id.indicador)
+        bolhaValor = findViewById(R.id.bolhaValor)
         val painelView = findViewById<ConstraintLayout>(R.id.painel)
         painel = PainelTeleprompter(painelView)
         carregarTexto()
@@ -100,9 +100,9 @@ class TeleprompterActivity : AppCompatActivity() {
         rolador = RolagemAutomatica(rolagem, texto) { atualizarPlay() }
         // Com o foco já na tela, o Android não "gasta" a primeira seta do controle movendo o foco.
         raiz.requestFocus()
+        // A régua desliza até o novo valor e o balão acima dela mostra qual é.
         controle = ControleRemoto(rolador, ::alternarPlay) { direcao ->
             regua.animarPara(regua.valor + direcao * 2 * regua.passo)
-            indicador.mostrarBrevemente(textoVelocidade(regua.valor + direcao * 2 * regua.passo))
         }
 
         // Espaço de meia tela antes e depois do texto, para começar e terminar na linha de leitura.
@@ -181,7 +181,11 @@ class TeleprompterActivity : AppCompatActivity() {
         })
         carrossel.setOnTouchListener { _, evento -> deslizar.onTouchEvent(evento) }
 
-        regua.aoMudar = { valor, final -> mudarVelocidade(valor, final) }
+        regua.aoMudar = { valor, final ->
+            mudarVelocidade(valor, final)
+            // Enquanto a régua se move, o balão mostra o valor em que ela vai parar.
+            bolhaValor.mostrarBrevemente(textoVelocidade(regua.encaixar(valor)))
+        }
     }
 
     override fun onRestart() {
@@ -315,7 +319,7 @@ class TeleprompterActivity : AppCompatActivity() {
             config = config.copy(nivelRolagem = (valor * 10).roundToInt() / 10f)
             rolador.nivelRolagem = config.nivelRolagem
         }
-        pilula.text = textoVelocidade(valor)
+        pilula.text = textoVelocidade(regua.encaixar(valor))
         if (final) config.salvar(this)
     }
 

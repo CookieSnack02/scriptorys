@@ -75,5 +75,16 @@
             android:valueFrom="0"
             android:valueTo="300"
             app:tickVisible="false" />
+
+        <TextView
+            style="@style/RotuloOpcao"
+            android:text="@string/salvar_videos_em" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/grupoPastaVideo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:selectionRequired="true"
+            app:singleSelection="true" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -37,7 +37,73 @@
                 android:id="@+id/posicaoBase"
                 style="@style/BotaoOpcao"
                 android:text="@string/base" />
+
+            <Button
+                android:id="@+id/posicaoLivre"
+                style="@style/BotaoOpcao"
+                android:text="@string/livre" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- Cola a caixa na câmera frontal embutida na tela (como num teleprompter de verdade) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/botaoSobreCamera"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/sobre_camera"
+            app:icon="@drawable/ic_videocam" />
+
+        <!-- Só na posição livre: largura da caixa (menor que a tela, para poder mover para os lados) -->
+        <LinearLayout
+            android:id="@+id/opcoesLivre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/dica_livre"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/interruptorGrade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/travar_grade"
+                android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/travar_grade_dica"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+
+            <TextView
+                android:id="@+id/rotuloLarguraCamera"
+                style="@style/RotuloOpcao" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/sliderLarguraCamera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="5"
+                android:valueFrom="40"
+                android:valueTo="100"
+                app:tickVisible="false" />
+        </LinearLayout>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/interruptorArredondado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/cantos_arredondados"
+            android:textAppearance="?attr/textAppearanceTitleSmall" />
 
         <TextView
             android:id="@+id/rotuloTamanhoCamera"

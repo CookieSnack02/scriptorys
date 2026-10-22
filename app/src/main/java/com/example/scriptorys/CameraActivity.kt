@@ -10,7 +10,11 @@ import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.graphics.Rect
+import android.graphics.drawable.GradientDrawable
 import android.view.Surface
+import android.widget.LinearLayout
+import com.google.android.material.materialswitch.MaterialSwitch
 import android.widget.ImageButton
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -77,7 +81,8 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.slider.Slider
 
-enum class PosicaoTexto { TOPO, CENTRO, BASE }
+/** Onde fica a caixa de texto; em LIVRE, o usuário arrasta a caixa para onde quiser. */
+enum class PosicaoTexto { TOPO, CENTRO, BASE, LIVRE }
 
 /**
  * Câmera ao vivo com o script rolando por cima, e gravação de vídeo.
@@ -89,6 +94,8 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var previa: PreviewView
     private lateinit var rolagem: ScrollView
+    private lateinit var caixaTexto: LinearLayout
+    private lateinit var alcaArrastar: View
     private lateinit var texto: TextView
     private lateinit var barra: View
     private lateinit var semPermissao: View
@@ -99,6 +106,21 @@ class CameraActivity : AppCompatActivity() {
     private var cameraFrontal = true
     private var margemTopo = 0
     private var posicao = PosicaoTexto.TOPO
+
+    /** Posição livre da caixa, em fração do espaço disponível (0 = esquerda/topo, 1 = direita/base). */
+    private var livreX = 0.5f
+    private var livreY = 0.3f
+    private var larguraLivre = 85
+
+    /** A caixa fica colada na câmera frontal da tela (e se reposiciona ao girar o celular). */
+    private var sobreCamera = false
+
+    /**
+     * Grade travada: a caixa livre fica na área segura (com margem, abaixo da faixa da câmera e acima
+     * dos controles). Destravada: pode ir a qualquer ponto da tela.
+     */
+    private var gradeTravada = false
+    private var cantosArredondados = true
     private var tamanhoSp = 24
     private var corTexto = Color.WHITE
     private var palavrasPorMinuto = 120
@@ -186,6 +208,9 @@ class CameraActivity : AppCompatActivity() {
 
         previa = findViewById(R.id.previa)
         rolagem = findViewById(R.id.rolagemCamera)
+        caixaTexto = findViewById(R.id.caixaTextoCamera)
+        alcaArrastar = findViewById(R.id.alcaArrastar)
+        configurarArrasto()
         texto = findViewById(R.id.textoCamera)
         barra = findViewById(R.id.barraCamera)
         semPermissao = findViewById(R.id.semPermissao)
@@ -371,30 +396,172 @@ class CameraActivity : AppCompatActivity() {
         // Texto escuro ganha sombra clara, e vice-versa, para continuar legível sobre a imagem.
         val escuro = Color.luminance(corTexto) < 0.4f
         texto.setShadowLayer(4f, 0f, 0f, if (escuro) 0xCCFFFFFF.toInt() else 0xCC000000.toInt())
-        rolagem.setBackgroundColor(if (escuro) 0x66FFFFFF else 0x66000000)
+        val dp = resources.displayMetrics.density
+        caixaTexto.background = GradientDrawable().apply {
+            setColor(if (escuro) 0x66FFFFFF else 0x66000000)
+            cornerRadius = if (cantosArredondados) 18 * dp else 0f
+        }
+        // Recorta o texto pelos cantos arredondados da caixa.
+        caixaTexto.clipToOutline = true
         rolador.palavrasPorMinuto = palavrasPorMinuto
 
         // A caixa mostra cerca de quatro linhas; o espaço extra no fim deixa a última linha subir até o topo.
-        val dp = resources.displayMetrics.density
         val alturaCaixa = (texto.lineHeight * 4 + 16 * dp).toInt()
         texto.updatePadding(top = (8 * dp).toInt(), bottom = alturaCaixa - texto.lineHeight)
-        rolagem.updateLayoutParams<FrameLayout.LayoutParams> { height = alturaCaixa }
+        rolagem.updateLayoutParams<LinearLayout.LayoutParams> { height = alturaCaixa }
         aplicarPosicao()
     }
 
     private fun aplicarPosicao() {
         val margem = (12 * resources.displayMetrics.density).toInt()
+        alcaArrastar.visibility = if (posicao == PosicaoTexto.LIVRE) View.VISIBLE else View.GONE
         barra.post {
-            rolagem.updateLayoutParams<FrameLayout.LayoutParams> {
+            pilulaMicrofone.updateLayoutParams<FrameLayout.LayoutParams> { bottomMargin = barra.height + margem }
+            if (posicao == PosicaoTexto.LIVRE) {
+                posicionarLivre()
+                return@post
+            }
+            caixaTexto.updateLayoutParams<FrameLayout.LayoutParams> {
+                width = FrameLayout.LayoutParams.MATCH_PARENT
+                leftMargin = margem
+                rightMargin = margem
                 gravity = when (posicao) {
                     PosicaoTexto.TOPO -> Gravity.TOP
                     PosicaoTexto.CENTRO -> Gravity.CENTER_VERTICAL
-                    PosicaoTexto.BASE -> Gravity.BOTTOM
+                    else -> Gravity.BOTTOM
                 }
                 topMargin = if (posicao == PosicaoTexto.TOPO) margemTopo + margem else 0
                 bottomMargin = if (posicao == PosicaoTexto.BASE) barra.height + pilulaMicrofone.height + 2 * margem else 0
             }
-            pilulaMicrofone.updateLayoutParams<FrameLayout.LayoutParams> { bottomMargin = barra.height + margem }
+        }
+    }
+
+    /** Área onde a caixa pode ficar. */
+    private data class Limites(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int)
+
+    /**
+     * Com a grade travada (e fora do encaixe na câmera), só a área segura; sem ela, a tela inteira,
+     * inclusive a faixa da câmera e por cima dos botões.
+     */
+    private fun limitesLivre(largura: Int, altura: Int): Limites {
+        val tela = caixaTexto.parent as View
+        if (!gradeTravada || sobreCamera) {
+            return Limites(0, (tela.width - largura).coerceAtLeast(0), 0, (tela.height - altura).coerceAtLeast(0))
+        }
+        val margem = (12 * resources.displayMetrics.density).toInt()
+        val maxX = (tela.width - largura - margem).coerceAtLeast(margem)
+        val fundo = tela.height - barra.height - pilulaMicrofone.height - 2 * margem
+        val minY = margemTopo + margem
+        return Limites(margem, maxX, minY, (fundo - altura).coerceAtLeast(minY))
+    }
+
+    /** Coloca a caixa na posição livre salva (em frações, para continuar certa ao girar a tela). */
+    private fun posicionarLivre() {
+        val tela = caixaTexto.parent as View
+        // Na grade travada, 100% de largura respeita a margem das bordas.
+        val margens = if (gradeTravada && !sobreCamera) 2 * (12 * resources.displayMetrics.density).toInt() else 0
+        val largura = ((tela.width - margens) * larguraLivre / 100).coerceAtLeast(1)
+        val altura = rolagem.layoutParams.height + alcaArrastar.layoutParams.height
+        val l = limitesLivre(largura, altura)
+        val (x, y) = if (sobreCamera) {
+            posicaoSobreCamera(largura, altura).first
+        } else {
+            (l.minX + ((l.maxX - l.minX) * livreX).toInt()) to (l.minY + ((l.maxY - l.minY) * livreY).toInt())
+        }
+        caixaTexto.updateLayoutParams<FrameLayout.LayoutParams> {
+            width = largura
+            gravity = Gravity.TOP or Gravity.START
+            leftMargin = x.coerceIn(l.minX, l.maxX)
+            topMargin = y.coerceIn(l.minY, l.maxY)
+            rightMargin = 0
+            bottomMargin = 0
+        }
+    }
+
+    /**
+     * Posição que deixa a caixa colada na câmera frontal embutida na tela (furo ou entalhe), como num
+     * teleprompter de verdade: o olhar fica praticamente na lente. A câmera fica dentro da alça da caixa
+     * e o texto começa logo depois dela. Devolve a posição e se a câmera foi encontrada; sem a informação
+     * do sistema, usa o topo da tela, ao centro, onde ficam quase todas as câmeras frontais.
+     */
+    private fun posicaoSobreCamera(largura: Int, altura: Int): Pair<Pair<Int, Int>, Boolean> {
+        val tela = caixaTexto.parent as View
+        val camera = retanguloDaCamera(tela)
+            ?: return ((tela.width - largura) / 2 to 0) to false
+        val alca = alcaArrastar.layoutParams.height
+        val dp = resources.displayMetrics.density
+        // Altura em que fica a primeira linha do texto, a partir do topo da caixa.
+        val primeiraLinha = alca + (8 * dp).toInt() + texto.lineHeight / 2
+        val distancias = mapOf(
+            "topo" to camera.top,
+            "base" to tela.height - camera.bottom,
+            "esquerda" to camera.left,
+            "direita" to tela.width - camera.right,
+        )
+        val posicao = when (distancias.minByOrNull { it.value }!!.key) {
+            // Câmera no alto (o normal na vertical): a câmera fica dentro da alça, o texto logo abaixo.
+            "topo" -> (camera.centerX() - largura / 2) to (camera.bottom - alca).coerceAtLeast(0)
+            "base" -> (camera.centerX() - largura / 2) to (camera.top - altura)
+            // Câmera na lateral (celular deitado): a primeira linha fica na altura da lente.
+            "esquerda" -> camera.right to (camera.centerY() - primeiraLinha)
+            else -> (camera.left - largura) to (camera.centerY() - primeiraLinha)
+        }
+        return posicao to true
+    }
+
+    /** Retângulo da câmera frontal na tela (pelo recorte do display), já nas coordenadas da [tela]. */
+    private fun retanguloDaCamera(tela: View): Rect? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return null
+        val recorte = window.decorView.rootWindowInsets?.displayCutout ?: return null
+        val camera = recorte.boundingRects.firstOrNull { !it.isEmpty } ?: return null
+        val origem = IntArray(2)
+        tela.getLocationInWindow(origem)
+        return Rect(camera).apply { offset(-origem[0], -origem[1]) }
+    }
+
+    /** Botão "Sobre a câmera": passa para a posição livre com a caixa colada na câmera frontal. */
+    private fun colocarSobreCamera() {
+        posicao = PosicaoTexto.LIVRE
+        // A lente fica fora da área segura, então o encaixe destrava a grade.
+        gradeTravada = false
+        sobreCamera = true
+        aplicarPosicao()
+        salvarPreferencias()
+        caixaTexto.post {
+            val achou = posicaoSobreCamera(caixaTexto.width, caixaTexto.height).second
+            if (!achou) Toast.makeText(this, R.string.camera_nao_encontrada, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** Arrastar pela alça move a caixa para qualquer ponto da tela; ao soltar, a posição é salva. */
+    @SuppressLint("ClickableViewAccessibility")
+    private fun configurarArrasto() {
+        var difX = 0f
+        var difY = 0f
+        alcaArrastar.setOnTouchListener { _, evento ->
+            val parametros = caixaTexto.layoutParams as FrameLayout.LayoutParams
+            when (evento.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    // Arrastar à mão desfaz o "sobre a câmera".
+                    sobreCamera = false
+                    difX = evento.rawX - parametros.leftMargin
+                    difY = evento.rawY - parametros.topMargin
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val l = limitesLivre(caixaTexto.width, caixaTexto.height)
+                    caixaTexto.updateLayoutParams<FrameLayout.LayoutParams> {
+                        leftMargin = (evento.rawX - difX).toInt().coerceIn(l.minX, l.maxX)
+                        topMargin = (evento.rawY - difY).toInt().coerceIn(l.minY, l.maxY)
+                    }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    val l = limitesLivre(caixaTexto.width, caixaTexto.height)
+                    livreX = if (l.maxX > l.minX) (parametros.leftMargin - l.minX).toFloat() / (l.maxX - l.minX) else 0.5f
+                    livreY = if (l.maxY > l.minY) (parametros.topMargin - l.minY).toFloat() / (l.maxY - l.minY) else 0f
+                    salvarPreferencias()
+                }
+            }
+            true
         }
     }
 
@@ -409,11 +576,52 @@ class CameraActivity : AppCompatActivity() {
             R.id.posicaoTopo to PosicaoTexto.TOPO,
             R.id.posicaoCentro to PosicaoTexto.CENTRO,
             R.id.posicaoBase to PosicaoTexto.BASE,
+            R.id.posicaoLivre to PosicaoTexto.LIVRE,
         )
+        painel.findViewById<View>(R.id.botaoSobreCamera).setOnClickListener {
+            dialogo.dismiss()
+            colocarSobreCamera()
+        }
+        val opcoesLivre = painel.findViewById<View>(R.id.opcoesLivre)
+        opcoesLivre.visibility = if (posicao == PosicaoTexto.LIVRE) View.VISIBLE else View.GONE
         painel.findViewById<MaterialButtonToggleGroup>(R.id.grupoPosicao).ligar(posicoes, posicao) {
+            if (it != posicao) sobreCamera = false
             posicao = it
+            opcoesLivre.visibility = if (it == PosicaoTexto.LIVRE) View.VISIBLE else View.GONE
             aplicarPosicao()
             salvarPreferencias()
+        }
+
+        val rotuloLargura = painel.findViewById<TextView>(R.id.rotuloLarguraCamera)
+        rotuloLargura.text = getString(R.string.largura_texto, larguraLivre)
+        painel.findViewById<Slider>(R.id.sliderLarguraCamera).apply {
+            value = larguraLivre.toFloat().coerceIn(valueFrom, valueTo)
+            addOnChangeListener { _, valor, _ ->
+                larguraLivre = valor.toInt()
+                rotuloLargura.text = getString(R.string.largura_texto, larguraLivre)
+                aplicarPosicao()
+                salvarPreferencias()
+            }
+        }
+
+        painel.findViewById<MaterialSwitch>(R.id.interruptorGrade).apply {
+            isChecked = gradeTravada
+            setOnCheckedChangeListener { _, travada ->
+                gradeTravada = travada
+                // Travar tira a caixa de cima da câmera e a traz de volta para a área segura.
+                if (travada) sobreCamera = false
+                aplicarPosicao()
+                salvarPreferencias()
+            }
+        }
+
+        painel.findViewById<MaterialSwitch>(R.id.interruptorArredondado).apply {
+            isChecked = cantosArredondados
+            setOnCheckedChangeListener { _, ligado ->
+                cantosArredondados = ligado
+                aplicarAparencia()
+                salvarPreferencias()
+            }
         }
 
         val rotuloTamanho = painel.findViewById<TextView>(R.id.rotuloTamanhoCamera)
@@ -720,6 +928,12 @@ class CameraActivity : AppCompatActivity() {
         tamanhoSp = p.getInt("tamanho", 24)
         corTexto = p.getInt("cor", Color.WHITE)
         palavrasPorMinuto = p.getInt("ppm", 120)
+        livreX = p.getFloat("livreX", 0.5f)
+        livreY = p.getFloat("livreY", 0.3f)
+        larguraLivre = p.getInt("larguraLivre", 85)
+        cantosArredondados = p.getBoolean("arredondado", true)
+        sobreCamera = p.getBoolean("sobreCamera", false)
+        gradeTravada = p.getBoolean("gradeTravada", false)
     }
 
     private fun salvarPreferencias() {
@@ -728,6 +942,12 @@ class CameraActivity : AppCompatActivity() {
             .putInt("tamanho", tamanhoSp)
             .putInt("cor", corTexto)
             .putInt("ppm", palavrasPorMinuto)
+            .putFloat("livreX", livreX)
+            .putFloat("livreY", livreY)
+            .putInt("larguraLivre", larguraLivre)
+            .putBoolean("arredondado", cantosArredondados)
+            .putBoolean("sobreCamera", sobreCamera)
+            .putBoolean("gradeTravada", gradeTravada)
             .apply()
     }
 
